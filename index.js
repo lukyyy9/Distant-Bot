@@ -66,6 +66,19 @@ app.post('/interactions', verifyKeyMiddleware(PUBLIC_KEY), async (req, res) => {
         }
       });
     }
+
+    if(interaction.data.name == 'share'){
+      //this command will take an Instagram link as parameter. it will then send the link of the post media (a video or image) to the channel where the command was used.
+      let url = interaction.data.options[0].value
+      let post_id = url.split('/').pop()
+      let media = (await discord_api.get(`/media/${post_id}`)).data
+      return res.send({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          content: `Here is the media from the post: ${media.url}`,
+        },
+      });
+    }
   }
 
 });
