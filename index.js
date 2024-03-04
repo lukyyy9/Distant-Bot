@@ -108,6 +108,25 @@ app.post('/interactions', verifyKeyMiddleware(PUBLIC_KEY), async (req, res) => {
           });
         });
       });
+      //now, send the video to the channel
+      //code :
+      const channel = interaction.channel_id;
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bot ${TOKEN}`
+      };
+      const data = {
+        content: 'Here is the video you requested',
+        file: video
+      };
+      const messageResponse = await axios.post(`https://discord.com/api/v9/channels/${channel}/messages`, data, { headers });
+      console.log(messageResponse);
+      return res.send({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          content: 'Here is the video you requested'
+        }
+      });
   }
   }
 
