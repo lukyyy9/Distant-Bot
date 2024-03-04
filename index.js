@@ -67,16 +67,41 @@ app.post('/interactions', verifyKeyMiddleware(PUBLIC_KEY), async (req, res) => {
       });
     }
 
-    if(interaction.data.name == 'share'){
-      //this command will take an Instagram link as parameter. it will then send the link of the post media (a video or image) to the channel where the command was used.
+    if (interaction.data.name == 'share') {
+      //this command will take an Instagram link as parameter.
       let url = interaction.data.options[0].value
-      let post_id = url.split('/').pop()
-      let media = (await discord_api.get(`/media/${post_id}`)).data
+      //and to this in order to get the media from the post :
+      const data = JSON.stringify({
+        url: 'https://www.instagram.com/p/C39769jMfIH/'
+      });
+
+      const xhr = new XMLHttpRequest();
+      xhr.withCredentials = true;
+
+      xhr.addEventListener('readystatechange', function () {
+        if (this.readyState === this.DONE) {
+          console.log(this.responseText);
+        }
+      });
+
+      xhr.open('POST', 'https://instagram120.p.rapidapi.com/api/instagram/links');
+      xhr.setRequestHeader('content-type', 'application/json');
+      xhr.setRequestHeader('X-RapidAPI-Key', '11065a7860mshec01a2819b36eb5p19a0b0jsn486f7bfb9946');
+      xhr.setRequestHeader('X-RapidAPI-Host', 'instagram120.p.rapidapi.com');
+
+      xhr.send(data);
+      //q: where is the response of the request we made to the instagram api?
+      //a: the response is located in the response of the request we made to the instagram api.
+      //q: how can i log the response?
+      //a: console.log(this.responseText);
+      //when you get the media from the post, you can send it to the channel where the command was used.
+      //the link we have to return is located in the response of the request we made to the instagram api.
+      let response = this.responseText
       return res.send({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
-          content: `Here is the media from the post: ${media.url}`,
-        },
+          content: `Here is the media from the post: ${response.urls[0].url}`
+        }
       });
     }
   }
