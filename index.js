@@ -95,22 +95,12 @@ app.post('/interactions', verifyKeyMiddleware(PUBLIC_KEY), async (req, res) => {
         req.end();
       });
       console.log(response);
-      if (response.status === '200') {
-        return res.send({
-          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-          data: {
-            content: response.urls[0].url,
-          },
-        });
-      } else {
-        return res.send({
-          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-          data: {
-            content: 'Sorry, I could not get the media from the provided link.',
-          },
-        });
-      }
-    }
+      return res.send({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          content: response.urls,
+        },
+      });
   }
 
 });
