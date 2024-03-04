@@ -94,11 +94,11 @@ app.post('/interactions', verifyKeyMiddleware(PUBLIC_KEY), async (req, res) => {
         req.write(JSON.stringify({ url }));
         req.end();
       });
-      console.log(response[0].urls[0]);
+      console.log(response[0].urls[0].url);
       return res.send({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
-          content: response.urls,
+          content: response[0].urls[0].url,
         },
       });
   }
