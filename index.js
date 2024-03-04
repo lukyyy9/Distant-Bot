@@ -95,11 +95,11 @@ app.post('/interactions', verifyKeyMiddleware(PUBLIC_KEY), async (req, res) => {
         req.end();
       });
       console.log(response);
-      if (response.status === 'success') {
+      if (response.status === '200') {
         return res.send({
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
           data: {
-            content: response.data.media_url,
+            content: response.urls[0].url,
           },
         });
       } else {
