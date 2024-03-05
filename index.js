@@ -71,6 +71,16 @@ app.post('/interactions', verifyKeyMiddleware(PUBLIC_KEY), async (req, res) => {
 
     if (interaction.data.name == 'share') {
       let url = interaction.data.options[0].value
+      let match = url.match(/instagram.com\/p\/([^\/]+)/);
+      if (!match) {
+        return res.send({
+          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+          data: {
+            content: 'Invalid Instagram post link'
+          }
+        });
+      }
+      let post_id = match[1];
       let response = await new Promise((resolve, reject) => {
         const req = https.request({
           hostname: 'instagram120.p.rapidapi.com',
@@ -91,9 +101,10 @@ app.post('/interactions', verifyKeyMiddleware(PUBLIC_KEY), async (req, res) => {
           });
         });
         req.on('error', reject);
-        req.write(JSON.stringify({ url }));
+        req.write(JSON.stringify({ url: 'https://www.instagram.com/p/' + post_id }));
         req.end();
       });
+      console.log('https://www.instagram.com/p/' + post_id);
       console.log(response[0].urls[0].url);
       return res.send({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
