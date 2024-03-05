@@ -80,7 +80,7 @@ app.post('/interactions', verifyKeyMiddleware(PUBLIC_KEY), async (req, res) => {
           }
         });
       }
-      let post_id = match[1];
+      let post_id = match[2];
       let response = await new Promise((resolve, reject) => {
         const req = https.request({
           hostname: 'instagram120.p.rapidapi.com',
