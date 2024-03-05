@@ -162,7 +162,8 @@ app.get('/register_commands', async (req,res) =>{
 
 
 app.get('/', async (req,res) =>{
-  return res.send('Follow documentation ')
+  //return res.send('Follow documentation ')
+  return res.redirect(`https://discord.com/oauth2/authorize?client_id=1212077510431608973&permissions=2048&redirect_uri=https%3A%2F%2Ferin-awful-duckling.cyclic.app&scope=applications.commands+bot`)
 })
 
 
