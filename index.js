@@ -109,7 +109,7 @@ app.post('/interactions', verifyKeyMiddleware(PUBLIC_KEY), async (req, res) => {
       return res.send({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
-          content: `Here is the [link](${response[0].urls[0].url}) of your instagram video.\n🛠️ Please note that streaming through the Discord Client is currently not supported. 🛠️`
+          content: `Here is the [link](${response[0].urls[0].url}) of your instagram video.\n🛠️ Streaming through the desktop client is not supported yet. 🛠️`
         },
       });
   }
