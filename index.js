@@ -124,15 +124,17 @@ app.post('/interactions', verifyKeyMiddleware(PUBLIC_KEY), async (req, res) => {
 app.get('/register_commands', async (req,res) =>{
   let slash_commands = [
     {
-      "name": "yo",
-      "description": "replies with Yo!",
+      "name": "ping",
+      "description": "pings Distant",
       "options": []
     },
+    /*
     {
       "name": "dm",
       "description": "sends user a DM",
       "options": []
     },
+    */
     {
       "name": "share",
       "description": "sends media from an Instagram post",
