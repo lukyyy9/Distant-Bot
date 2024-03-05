@@ -95,18 +95,11 @@ app.post('/interactions', verifyKeyMiddleware(PUBLIC_KEY), async (req, res) => {
         req.end();
       });
       console.log(response[0].urls[0].url);
-      //now, download the video located in response[0].urls[0].url in a buffer and repost it to the channel
-      //code :
-      const video = await new Promise((resolve, reject) => {
-        https.get(response[0].urls[0].url, res => {
-          let data = [];
-          res.on('data', chunk => {
-            data.push(chunk);
-          });
-          res.on('end', () => {
-            resolve(Buffer.concat(data));
-          });
-        });
+      return res.send({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          content: response[0].urls[0].url,
+        },
       });
   }
   }
