@@ -44,19 +44,19 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                     let videoType = '';
                     switch (url.split('.')[1]+'.') {
                         case platform.Instagram:
-                            url.replace(platform.Instagram, altPlatform.Instagram);
+                            url = url.replace(platform.Instagram, altPlatform.Instagram);
                             videoType = 'Reel';
                             break;
                         case platform.TikTok:
-                            url.replace(platform.TikTok, altPlatform.TikTok);
+                            url = url.replace(platform.TikTok, altPlatform.TikTok);
                             videoType = 'TikTok';
                             break;
                         case platform.Twitter:
-                            url.replace(platform.Twitter, altPlatform.TwitterX);
+                            url = url.replace(platform.Twitter, altPlatform.TwitterX);
                             videoType = 'X';
                             break;
                         case platform.X:
-                            url.replace(platform.X, altPlatform.TwitterX);
+                            url = url.replace(platform.X, altPlatform.TwitterX);
                             videoType = 'X';
                             break;
                         default:
