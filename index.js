@@ -61,7 +61,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                             videoType = 'X';
                             break;
                         default:
-                            videoType = new URL(url).hostname;
+                            videoType = new URL(url).hostname + ' video';
                             break;
                     }
                     return res.send({
