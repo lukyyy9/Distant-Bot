@@ -31,7 +31,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                     const url = data.options[0].value;
                     const match = url.match(/instagram.com\/reel\/(\d+)/);
                     const reelId = match[1];
-                    const directVideoUrl = `https://www.ddinstagram.com/reel/${reelId}/?igsh=MTVjazh1cm04czhmbw==`;
+                    const directVideoUrl = `https://www.ddinstagram.com/reel/${reelId}/`;
 
                     return res.send({
                         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
