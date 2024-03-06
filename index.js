@@ -42,8 +42,8 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 case 'share':
                     let url = data.options[0].value;
                     let videoType = '';
-                    let urlObject = new URL(url);
-                    let domain = urlObject.hostname.replace('www.', '').replace('.com', '');
+                    //domain should be only the domain name. we have to take care of if there is http, https, www, etc
+                    let domain = url.replace(/(^\w+:|^)\/\//, '').split('/')[0].replace('www.', '');
                     switch (domain) {
                         case platform.Instagram:
                             url = url.replace(platform.Instagram, altPlatform.Instagram);
