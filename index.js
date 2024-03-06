@@ -17,46 +17,55 @@ const verifyMiddleware = verifyKeyMiddleware(process.env.PUBLIC_KEY);
 
 app.post('/interactions', verifyMiddleware, async (req, res) => {
     const { type, data, member } = req.body;
-    if (type === InteractionType.APPLICATION_COMMAND) {
-        if (data.name === 'share') {
-            const url = data.options[0].value;
-            try {
-                const directVideoUrl = await transformUrl(url);
-                if (!directVideoUrl) {
+
+    switch (type) {
+        case InteractionType.APPLICATION_COMMAND:
+            switch (data.name) {
+                case 'ping':
                     return res.send({
                         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                        data: { content: 'Failed to transform Instagram link to a direct video URL.' },
+                        data: { content: `Pong ${member.user.username}! 🏓` },
                     });
-                }
-                return res.send({
-                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: { content: `Here is the direct link to the Instagram video: ${directVideoUrl}` },
-                });
-            } catch (error) {
-                console.error('Error processing request:', error);
-                return res.status(500).send({ content: 'An error occurred while processing your request.' });
+
+                case 'share':
+                    const url = data.options[0].value;
+                    const match = url.match(/instagram.com\/([a-zA-Z]+)\/([^\/]+)/);
+
+                    if (!match) {
+                        return res.send({
+                            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                            data: { content: 'Invalid Instagram post link' },
+                        });
+                    }
+
+                    try {
+                        const response = await axios.post('https://instagram120.p.rapidapi.com/api/instagram/links', {
+                            url: 'https://www.instagram.com/p/' + match[2],
+                        }, {
+                            headers: {
+                                'X-RapidAPI-Key': '11065a7860mshec01a2819b36eb5p19a0b0jsn486f7bfb9946',
+                                'X-RapidAPI-Host': 'instagram120.p.rapidapi.com',
+                                'Content-Type': 'application/json',
+                            },
+                        });
+
+                        const modifiedUrl = response.data[0].urls[0].url.replace('dl=1', 'dl=0');
+
+                        return res.send({
+                            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                            data: { content: `Here is the [link](${modifiedUrl}) of your Instagram video.\n🛠️ Streaming through the desktop client is not supported yet. 🛠️` },
+                        });
+                    } catch (error) {
+                        console.error('Error fetching Instagram data:', error);
+                        return res.status(500).send({ content: 'Failed to fetch Instagram data' });
+                    }
             }
-        }
-    } else {
-        console.log('Unhandled interaction type:', type);
+            break;
+
+        default:
+            console.log('Unhandled interaction type:', type);
     }
 });
-
-async function transformUrl(inputUrl) {
-    try {
-        const response = await axios.post('instagram120.p.rapidapi.com', { url: inputUrl }, {
-            headers: {
-                'Content-Type': 'application/json',
-                'X-RapidAPI-Key': '11065a7860mshec01a2819b36eb5p19a0b0jsn486f7bfb9946',
-                'X-RapidAPI-Host': 'instagram120.p.rapidapi.com',
-            },
-        });
-        return response.data.directVideoUrl;
-    } catch (error) {
-        console.error('Error transforming URL with API:', error);
-        return null;
-    }
-}
 
 app.get('/register_commands', async (req, res) => {
     const slashCommands = [
@@ -76,6 +85,7 @@ app.get('/register_commands', async (req, res) => {
             }],
         },
     ];
+
     try {
         await discordApi.put(`/applications/${process.env.APPLICATION_ID}/commands`, slashCommands);
         res.send('Global commands have been registered');
@@ -90,4 +100,4 @@ app.get('/', (req, res) => {
 });
 
 const PORT = process.env.PORT || 8999;
-app.listen(PORT, () => console.log(`Server is running on port ${PORT}.`));
+app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
