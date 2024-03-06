@@ -29,8 +29,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 
                 case 'share':
                     const url = data.options[0].value;
-                    const match = url.match(/^https:\/\/www\.instagram\.com\/reel\/([a-zA-Z0-9_\-]+)\/\?igshid=[a-zA-Z0-9_\-]+$/);
-
+                    const match = url.match(/instagram.com\/reel\/(\d+)/);
                     if (match) {
                         const reelId = match[1];
                         const directVideoUrl = `https://www.ddinstagram.com/reel/${reelId}/?igsh=MTVjazh1cm04czhmbw==`;
