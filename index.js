@@ -102,7 +102,7 @@ app.get('/register_commands', async (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.redirect(`https://discord.com/oauth2/authorize?client_id=${process.env.APPLICATION_ID}&permissions=2048&redirect_uri=${encodeURIComponent(process.env.REDIRECT_URI)}&scope=applications.commands+bot`);
+    res.redirect(`https://discord.com/oauth2/authorize?client_id=1212077510431608973&permissions=2048&scope=bot+applications.commands`);
 });
 
 const PORT = process.env.PORT || 8999;
