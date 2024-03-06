@@ -27,38 +27,36 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                         data: { content: `Pong ${member.user.username}! 🏓` },
                     });
 
-                case 'share':
-                    const url = data.options[0].value;
-                    const match = url.match(/instagram.com\/([a-zA-Z]+)\/([^\/]+)/);
+					case 'share':
+						const url = data.options[0].value;
+						// Match URLs starting with the specified pattern for Instagram Reels on ddinstagram
+						const match = url.match(/^https:\/\/www\.ddinstagram\.com\/reel\/([a-zA-Z0-9_\-]+)\/\?igshid=[a-zA-Z0-9_\-]+$/);
 
-                    if (!match) {
-                        return res.send({
-                            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                            data: { content: 'Invalid Instagram post link' },
-                        });
-                    }
+						if (match) {
+							// Assume transformUrl function can handle URLs from ddinstagram to fetch a direct video link
+							try {
+								const directVideoUrl = await transformUrl(url);
+								if (!directVideoUrl) {
+									return res.send({
+										type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+										data: { content: 'Failed to obtain a direct video URL.' },
+									});
+								}
 
-                    try {
-                        const response = await axios.post('https://instagram120.p.rapidapi.com/api/instagram/links', {
-                            url: 'https://www.instagram.com/p/' + match[2],
-                        }, {
-                            headers: {
-                                'X-RapidAPI-Key': '11065a7860mshec01a2819b36eb5p19a0b0jsn486f7bfb9946',
-                                'X-RapidAPI-Host': 'instagram120.p.rapidapi.com',
-                                'Content-Type': 'application/json',
-                            },
-                        });
-
-                        const modifiedUrl = response.data[0].urls[0].url.replace('dl=1', 'dl=0');
-
-                        return res.send({
-                            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                            data: { content: `Here is the [link](${modifiedUrl}) of your Instagram video.\n🛠️ Streaming through the desktop client is not supported yet. 🛠️` },
-                        });
-                    } catch (error) {
-                        console.error('Error fetching Instagram data:', error);
-                        return res.status(500).send({ content: 'Failed to fetch Instagram data' });
-                    }
+								return res.send({
+									type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+									data: { content: `Here is the direct link to the Instagram video: ${directVideoUrl}\n🛠️ Streaming through the desktop client is not supported yet. 🛠️` },
+								});
+							} catch (error) {
+								console.error('Error processing Instagram reel:', error);
+								return res.status(500).send({ content: 'An error occurred while processing your request.' });
+							}
+						} else {
+							return res.send({
+								type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+								data: { content: 'Invalid Instagram reel link provided.' },
+							});
+					}
             }
             break;
 
