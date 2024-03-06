@@ -43,7 +43,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                     let url = data.options[0].value;
                     let videoType = '';
                     console.log(new URL(url).hostname.replace('www.', '').split('.')[0].toLowerCase());
-                    switch (new URL(url).hostname.replace('www.', '').split('.')[0].toLowerCase()){
+                    switch (new URL(url).hostname.replace('www.', '').split('.')[0].toLowerCase()+'.'){
                         case platform.Instagram:
                             url = url.replace(platform.Instagram, altPlatform.Instagram);
                             videoType = 'Reel';
