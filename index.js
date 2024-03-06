@@ -1,171 +1,101 @@
-
-// const { clientId, guildId, token, publicKey } = require('./config.json');
-require('dotenv').config()
-const https = require('https');
-
-const APPLICATION_ID = process.env.APPLICATION_ID
-const TOKEN = process.env.TOKEN
-const PUBLIC_KEY = process.env.PUBLIC_KEY || 'not set'
-const GUILD_ID = process.env.GUILD_ID
-
-
-const axios = require('axios')
+require('dotenv').config();
 const express = require('express');
+const axios = require('axios');
 const { InteractionType, InteractionResponseType, verifyKeyMiddleware } = require('discord-interactions');
 
-
 const app = express();
-// app.use(bodyParser.json());
+app.use(express.json());
 
-const discord_api = axios.create({
+const discordApi = axios.create({
   baseURL: 'https://discord.com/api/',
-  timeout: 3000,
   headers: {
-	"Access-Control-Allow-Origin": "*",
-	"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
-	"Access-Control-Allow-Headers": "Authorization",
-	"Authorization": `Bot ${TOKEN}`
-  }
+    "Authorization": `Bot ${process.env.TOKEN}`,
+  },
 });
 
+const verifyMiddleware = verifyKeyMiddleware(process.env.PUBLIC_KEY);
 
+app.post('/interactions', verifyMiddleware, async (req, res) => {
+  const { type, data, member } = req.body;
 
-
-app.post('/interactions', verifyKeyMiddleware(PUBLIC_KEY), async (req, res) => {
-  const interaction = req.body;
-
-  if (interaction.type === InteractionType.APPLICATION_COMMAND) {
-    console.log(interaction.data.name)
-    if(interaction.data.name == 'ping'){
-      return res.send({
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: {
-          content: `Pong ${interaction.member.user.username}! 🏓`,
-        },
-      });
-    }
-
-    /*
-    if(interaction.data.name == 'dm'){
-      // https://discord.com/developers/docs/resources/user#create-dm
-      let c = (await discord_api.post(`/users/@me/channels`,{
-        recipient_id: interaction.member.user.id
-      })).data
-      try{
-        // https://discord.com/developers/docs/resources/channel#create-message
-        let res = await discord_api.post(`/channels/${c.id}/messages`,{
-          content:'Yo! I got your slash command. I am not able to respond to DMs just slash commands.',
-        })
-        console.log(res.data)
-      }catch(e){
-        console.log(e)
-      }
-
-      return res.send({
-        // https://discord.com/developers/docs/interactions/receiving-and-responding#responding-to-an-interaction
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data:{
-          content:'👍'
-        }
-      });
-    }
-    */
-
-    if (interaction.data.name == 'share') {
-      let url = interaction.data.options[0].value
-      let match = url.match(/instagram.com\/([a-zA-Z]+)\/([^\/]+)/);
-      if (!match) {
-        return res.send({
-          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-          data: {
-            content: 'Invalid Instagram post link'
-          }
-        });
-      }
-      let post_id = match[2];
-      let response = await new Promise((resolve, reject) => {
-        const req = https.request({
-          hostname: 'instagram120.p.rapidapi.com',
-          path: '/api/instagram/links',
-          method: 'POST',
-          headers: {
-            'content-type': 'application/json',
-            'X-RapidAPI-Key': '11065a7860mshec01a2819b36eb5p19a0b0jsn486f7bfb9946',
-            'X-RapidAPI-Host': 'instagram120.p.rapidapi.com'
-          }
-        }, res => {
-          let data = '';
-          res.on('data', chunk => {
-            data += chunk;
+  switch (type) {
+    case InteractionType.APPLICATION_COMMAND:
+      switch (data.name) {
+        case 'ping':
+          return res.send({
+            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+            data: { content: `Pong ${member.user.username}! 🏓` },
           });
-          res.on('end', () => {
-            resolve(JSON.parse(data));
-          });
-        });
-        req.on('error', reject);
-        req.write(JSON.stringify({ url: 'https://www.instagram.com/p/' + post_id }));
-        req.end();
-      });
-      console.log('https://www.instagram.com/p/' + post_id);
-      console.log(response[0].urls[0].url);
-      return res.send({
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: {
-          content: `Here is the [link](${response[0].urls[0].url}) of your instagram video.\n🛠️ Streaming through the desktop client is not supported yet. 🛠️`
-        },
-      });
-  }
-  }
 
+        case 'share':
+          const url = data.options[0].value;
+          const match = url.match(/instagram.com\/([a-zA-Z]+)\/([^\/]+)/);
+
+          if (!match) {
+            return res.send({
+              type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+              data: { content: 'Invalid Instagram post link' },
+            });
+          }
+
+          try {
+            const response = await axios.post('https://instagram120.p.rapidapi.com/api/instagram/links', {
+              url: 'https://www.instagram.com/p/' + match[2],
+            }, {
+              headers: {
+                'X-RapidAPI-Key': '11065a7860mshec01a2819b36eb5p19a0b0jsn486f7bfb9946',
+                'X-RapidAPI-Host': 'instagram120.p.rapidapi.com',
+                'Content-Type': 'application/json',
+              },
+            });
+
+            return res.send({
+              type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+              data: { content: `Here is the [link](${response.data[0].urls[0].url}) of your Instagram video.\n🛠️ Streaming through the desktop client is not supported yet. 🛠️` },
+            });
+          } catch (error) {
+            console.error('Error fetching Instagram data:', error);
+            return res.status(500).send({ content: 'Failed to fetch Instagram data' });
+          }
+      }
+      break;
+
+    default:
+      console.log('Unhandled interaction type:', type);
+  }
 });
-
-
 
 app.get('/register_commands', async (req, res) => {
-  let slash_commands = [
+  const slashCommands = [
     {
       "name": "ping",
-      "description": "pings Distant",
-      "options": []
+      "description": "Pings Distant",
+      "options": [],
     },
     {
       "name": "share",
-      "description": "sends media from an Instagram post",
-      "options": [
-        {
-          "name": "url",
-          "description": "Instagram post link",
-          "type": 3, // Type 3 correspond à un paramètre de type "STRING"
-          "required": true
-        }
-      ]
-    }
+      "description": "Sends media from an Instagram post",
+      "options": [{
+        "name": "url",
+        "description": "Instagram post link",
+        "type": 3,
+        "required": true,
+      }],
+    },
   ];
 
   try {
-    // Modifier ici pour utiliser l'endpoint des commandes globales
-    let discord_response = await discord_api.put(
-      `/applications/${APPLICATION_ID}/commands`,
-      slash_commands
-    );
-
-    console.log(discord_response.data);
-    return res.send('Global commands have been registered');
-  } catch (e) {
-    console.error(e.code);
-    console.error(e.response?.data);
-    return res.send(`${e.code} error from Discord`);
+    await discordApi.put(`/applications/${process.env.APPLICATION_ID}/commands`, slashCommands);
+    res.send('Global commands have been registered');
+  } catch (error) {
+    console.error('Error registering commands:', error);
+    res.status(500).send('Error registering global commands');
   }
 });
 
+app.get('/', (req, res) => {
+  res.redirect(`https://discord.com/oauth2/authorize?client_id=${process.env.APPLICATION_ID}&permissions=2048&redirect_uri=${encodeURIComponent(process.env.REDIRECT_URI)}&scope=applications.commands+bot`);
+});
 
-app.get('/', async (req,res) =>{
-  //return res.send('Follow documentation ')
-  return res.redirect(`https://discord.com/oauth2/authorize?client_id=1212077510431608973&permissions=2048&redirect_uri=https%3A%2F%2Ferin-awful-duckling.cyclic.app&scope=applications.commands+bot`)
-})
-
-
-app.listen(8999, () => {
-
-})
-
+const PORT = process.env.PORT || 8999;
+app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
