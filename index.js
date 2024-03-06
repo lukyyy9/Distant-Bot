@@ -27,24 +27,39 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                         data: { content: `Pong ${member.user.username}! 🏓` },
                     });
 
-				case 'share':
-					const url = data.options[0].value;
-					const match = url.match(/\/reel\/([a-zA-Z0-9_\-]+)\/?$/);
+                case 'share':
+                    const url = data.options[0].value;
+                    let match;
+                    let directVideoUrl;
 
-					if (match && match[1]) {
-						const reelId = match[1];
-						const directVideoUrl = `https://www.ddinstagram.com/reel/${reelId}/`;
+                    if (url.includes("instagram.com/reel/")) {
+                        match = url.match(/\/reel\/([a-zA-Z0-9_\-]+)\/?$/);
+                        if (match && match[1]) {
+                            directVideoUrl = `https://www.ddinstagram.com/reel/${match[1]}/`;
+                        }
+                    } else if (url.includes("tiktok.com/")) {
+                        match = url.match(/\/video\/([a-zA-Z0-9_\-]+)\/?$/);
+                        if (match && match[1]) {
+                            directVideoUrl = `https://www.vxtiktok.com/video/${match[1]}/`;
+                        }
+                    } else if (url.includes("twitter.com/")) {
+                        match = url.match(/\/status\/([a-zA-Z0-9_\-]+)\/?$/);
+                        if (match && match[1]) {
+                            directVideoUrl = `https://www.fxtwitter.com/status/${match[1]}/`;
+                        }
+                    }
 
-						return res.send({
-							type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-							data: { content: `Here is the direct link to the Instagram video: ${directVideoUrl}\n🛠️ Streaming through the desktop client is not supported yet. 🛠️` },
-						});
-					} else {
-						return res.send({
-							type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-							data: { content: 'Invalid Instagram reel link provided.' },
-						});
-					}
+                    if (directVideoUrl) {
+                        return res.send({
+                            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                            data: { content: `Here is the direct link to the video: ${directVideoUrl}\n🛠️ Streaming through the desktop client is not supported yet. 🛠️` },
+                        });
+                    } else {
+                        return res.send({
+                            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                            data: { content: 'Invalid link provided.' },
+                        });
+                    }
             }
             break;
     }
@@ -59,10 +74,10 @@ app.get('/register_commands', async (req, res) => {
         },
         {
             "name": "share",
-            "description": "Sends media from an Instagram post",
+            "description": "Sends media from an Instagram, TikTok, or Twitter post",
             "options": [{
                 "name": "url",
-                "description": "Instagram post link",
+                "description": "Post link",
                 "type": 3,
                 "required": true,
             }],
