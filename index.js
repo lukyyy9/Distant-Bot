@@ -40,7 +40,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                     });
 
                 case 'share':
-                    const url = data.options[0].value;
+                    let url = data.options[0].value;
                     let videoType = '';
                     switch (url.split('.')[1]+'.') {
                         case platform.Instagram:
