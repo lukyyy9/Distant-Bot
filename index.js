@@ -15,6 +15,18 @@ const discordApi = axios.create({
 
 const verifyMiddleware = verifyKeyMiddleware(process.env.PUBLIC_KEY);
 
+const platform = {
+    Instagram: 'instagram.',
+    TikTok: 'tiktok.',
+    Twitter: 'twitter.',
+    X: 'x.'
+};
+const altPlatform = {
+    Instagram: 'ddinstagram.',
+    TikTok: 'vxtiktok.',
+    TwitterX: 'fxtwitter.'
+};
+
 app.post('/interactions', verifyMiddleware, async (req, res) => {
     const { type, data, member } = req.body;
 
@@ -29,15 +41,31 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 
                 case 'share':
                     const url = data.options[0].value;
-					//get only the id of the url
-                    const reelId = url.split('/').pop();
-                    const directVideoUrl = `https://www.ddinstagram.com/reel/${reelId}/`;
-
+                    let videoType = '';
+                    switch (url.split('.')[1]) {
+                        case platform.Instagram:
+                            url.replace(platform.Instagram, altPlatform.Instagram);
+                            videoType = 'Reel';
+                            break;
+                        case platform.TikTok:
+                            url.replace(platform.TikTok, altPlatform.TikTok);
+                            videoType = 'TikTok';
+                            break;
+                        case platform.Twitter:
+                            url.replace(platform.Twitter, altPlatform.TwitterX);
+                            videoType = 'X';
+                            break;
+                        case platform.X:
+                            url.replace(platform.X, altPlatform.TwitterX);
+                            videoType = 'X';
+                            break;
+                        default:
+                            break;
+                    }
                     return res.send({
                         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                        data: { content: `Here is the direct link to the Instagram video: ${directVideoUrl}\n🛠️ Streaming through the desktop client is not supported yet. 🛠️` },
+                        data: { content: `[${videoType}](${url}) shared by ${member.user.username}:` },
                     });
-                    break;
             }
             break;
     }
