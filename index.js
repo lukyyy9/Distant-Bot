@@ -15,6 +15,18 @@ const discordApi = axios.create({
 
 const verifyMiddleware = verifyKeyMiddleware(process.env.PUBLIC_KEY);
 
+const platform = {
+    Instagram: 'instagram.',
+    TikTok: 'tiktok.',
+    Twitter: 'twitter.',
+    X: 'x.'
+};
+const altPlatform = {
+    Instagram: 'ddinstagram.',
+    TikTok: 'vxtiktok.',
+    TwitterX: 'fxtwitter.'
+};
+
 app.post('/interactions', verifyMiddleware, async (req, res) => {
     const { type, data, member } = req.body;
 
@@ -29,37 +41,31 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 
                 case 'share':
                     const url = data.options[0].value;
-                    let match;
-                    let directVideoUrl;
-
-                    if (url.includes("instagram.com/reel/")) {
-                        match = url.match(/\/reel\/([a-zA-Z0-9_\-]+)\/?$/);
-                        if (match && match[1]) {
-                            directVideoUrl = `https://www.ddinstagram.com/reel/${match[1]}/`;
-                        }
-                    } else if (url.includes("tiktok.com/")) {
-						const match = url.match(/tiktok\.com\/@([^\/]+)\/video\/([0-9]+)/);
-						if (match && match[1] && match[2]) {
-							directVideoUrl = `https://www.vxtiktok.com/@${match[1]}/video/${match[2]}`;
-						}
-                    } else if (url.includes("twitter.com/")) {
-                        match = url.match(/\/status\/([a-zA-Z0-9_\-]+)\/?$/);
-                        if (match && match[1]) {
-                            directVideoUrl = `https://www.fxtwitter.com/status/${match[1]}/`;
-                        }
+                    let videoType = '';
+                    switch (url.split('.')[1]) {
+                        case platform.Instagram:
+                            url.replace(platform.Instagram, altPlatform.Instagram);
+                            videoType = 'Reel';
+                            break;
+                        case platform.TikTok:
+                            url.replace(platform.TikTok, altPlatform.TikTok);
+                            videoType = 'TikTok';
+                            break;
+                        case platform.Twitter:
+                            url.replace(platform.Twitter, altPlatform.TwitterX);
+                            videoType = 'X';
+                            break;
+                        case platform.X:
+                            url.replace(platform.X, altPlatform.TwitterX);
+                            videoType = 'X';
+                            break;
+                        default:
+                            break;
                     }
-
-                    if (directVideoUrl) {
-                        return res.send({
-                            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                            data: { content: `Here is the direct link to the video: ${directVideoUrl}\n🛠️ Streaming through the desktop client is not supported yet. 🛠️` },
-                        });
-                    } else {
-                        return res.send({
-                            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                            data: { content: 'Invalid link provided.' },
-                        });
-                    }
+                    return res.send({
+                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                        data: { content: `[${videoType}](${url}) shared by ${member.user.username}:` },
+                    });
             }
             break;
     }
@@ -74,10 +80,10 @@ app.get('/register_commands', async (req, res) => {
         },
         {
             "name": "share",
-            "description": "Sends media from an Instagram, TikTok, or Twitter post",
+            "description": "Sends media from an Instagram post",
             "options": [{
                 "name": "url",
-                "description": "Post link",
+                "description": "Instagram post link",
                 "type": 3,
                 "required": true,
             }],
