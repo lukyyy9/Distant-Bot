@@ -38,10 +38,10 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                             directVideoUrl = `https://www.ddinstagram.com/reel/${match[1]}/`;
                         }
                     } else if (url.includes("tiktok.com/")) {
-                        match = url.match(/\/video\/([a-zA-Z0-9_\-]+)\/?$/);
-                        if (match && match[1]) {
-                            directVideoUrl = `https://www.vxtiktok.com/video/${match[1]}/`;
-                        }
+						const match = url.match(/tiktok\.com\/@([^\/]+)\/video\/([0-9]+)/);
+						if (match && match[1] && match[2]) {
+							directVideoUrl = `https://www.vxtiktok.com/@${match[1]}/video/${match[2]}`;
+						}
                     } else if (url.includes("twitter.com/")) {
                         match = url.match(/\/status\/([a-zA-Z0-9_\-]+)\/?$/);
                         if (match && match[1]) {
