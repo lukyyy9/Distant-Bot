@@ -29,8 +29,8 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 
                 case 'share':
                     const url = data.options[0].value;
-                    const match = url.match(/instagram.com\/reel\/(\d+)/);
-                    const reelId = match[1];
+					//get only the id of the url
+                    const reelId = url.split('/').pop();
                     const directVideoUrl = `https://www.ddinstagram.com/reel/${reelId}/`;
 
                     return res.send({
