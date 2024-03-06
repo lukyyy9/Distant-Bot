@@ -42,8 +42,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 case 'share':
                     let url = data.options[0].value;
                     let videoType = '';
-                    let domain = url.match(/:\/\/(.[^/]+)/)[1];
-                    switch (domain) {
+                    switch (url.split('.')[1]+'.') {
                         case platform.Instagram:
                             url = url.replace(platform.Instagram, altPlatform.Instagram);
                             videoType = 'Reel';
