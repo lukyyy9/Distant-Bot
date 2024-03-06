@@ -82,7 +82,7 @@ app.get('/register_commands', async (req, res) => {
         },
         {
             "name": "share",
-            "description": "Sends media from an Instagram post",
+            "description": "Sends video from a social media post",
             "options": [{
                 "name": "url",
                 "description": "Instagram post link",
