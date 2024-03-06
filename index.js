@@ -41,30 +41,29 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 
                 case 'share':
                     let url = data.options[0].value;
-					let hostname = new URL(data.options[0].value).hostname.split('.');
-					hostname.pop();
-					urlname = hostname.pop() + '.';
                     let videoType = '';
-					switch (urlname) {
-						case platform.Instagram:
-							url = url.replace(platform.Instagram, altPlatform.Instagram);
-							videoType = 'Instagram Reel';
-							break;
-						case platform.TikTok:
-							url = url.replace(platform.TikTok, altPlatform.TikTok);
-							videoType = 'TikTok';
-							break;
-						case platform.Twitter:
-							url = url.replace(platform.Twitter, altPlatform.Twitter);
-							videoType = 'Twitter';
-							break;
-						case platform.X:
-							url = url.replace(platform.X, altPlatform.TwitterX);
-							videoType = 'X';
-							break;
-						default:
-							break;
-					}
+                    log(new URL(url).hostname.replace('www.', '').split('.')[0].toLowerCase());
+                    switch (new URL(url).hostname.replace('www.', '').split('.')[0].toLowerCase()){
+                        case platform.Instagram:
+                            url = url.replace(platform.Instagram, altPlatform.Instagram);
+                            videoType = 'Reel';
+                            break;
+                        case platform.TikTok:
+                            url = url.replace(platform.TikTok, altPlatform.TikTok);
+                            videoType = 'TikTok';
+                            break;
+                        case platform.Twitter:
+                            url = url.replace(platform.Twitter, altPlatform.TwitterX);
+                            videoType = 'X';
+                            break;
+                        case platform.X:
+                            url = url.replace(platform.X, altPlatform.TwitterX);
+                            videoType = 'X';
+                            break;
+                        default:
+                            videoType = 'Video';
+                            break;
+                    }
                     return res.send({
                         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                         data: { content: `[${videoType}](${url}) shared by ${member.user.username}:` },
