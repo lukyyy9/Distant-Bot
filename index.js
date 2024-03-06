@@ -27,17 +27,24 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                         data: { content: `Pong ${member.user.username}! 🏓` },
                     });
 
-                case 'share':
-                    const url = data.options[0].value;
-					//get only the id of the url
-                    const reelId = url.split('/').pop();
-                    const directVideoUrl = `https://www.ddinstagram.com/reel/${reelId}/`;
+				case 'share':
+					const url = data.options[0].value;
+					const match = url.match(/\/reel\/([a-zA-Z0-9_\-]+)\/?$/);
 
-                    return res.send({
-                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                        data: { content: `Here is the direct link to the Instagram video: ${directVideoUrl}\n🛠️ Streaming through the desktop client is not supported yet. 🛠️` },
-                    });
-                    break;
+					if (match && match[1]) {
+						const reelId = match[1];
+						const directVideoUrl = `https://www.ddinstagram.com/reel/${reelId}/`;
+
+						return res.send({
+							type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+							data: { content: `Here is the direct link to the Instagram video: ${directVideoUrl}\n🛠️ Streaming through the desktop client is not supported yet. 🛠️` },
+						});
+					} else {
+						return res.send({
+							type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+							data: { content: 'Invalid Instagram reel link provided.' },
+						});
+					}
             }
             break;
     }
