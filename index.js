@@ -44,7 +44,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 
 async function transformUrl(inputUrl) {
     try {
-        const response = await axios.post('API_ENDPOINT', { url: inputUrl }, {
+        const response = await axios.post('instagram120.p.rapidapi.com', { url: inputUrl }, {
             headers: {
                 'Content-Type': 'application/json',
                 'X-RapidAPI-Key': '11065a7860mshec01a2819b36eb5p19a0b0jsn486f7bfb9946',
