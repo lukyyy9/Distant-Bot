@@ -121,20 +121,13 @@ app.post('/interactions', verifyKeyMiddleware(PUBLIC_KEY), async (req, res) => {
 
 
 
-app.get('/register_commands', async (req,res) =>{
+app.get('/register_commands', async (req, res) => {
   let slash_commands = [
     {
       "name": "ping",
       "description": "pings Distant",
       "options": []
     },
-    /*
-    {
-      "name": "dm",
-      "description": "sends user a DM",
-      "options": []
-    },
-    */
     {
       "name": "share",
       "description": "sends media from an Instagram post",
@@ -142,27 +135,28 @@ app.get('/register_commands', async (req,res) =>{
         {
           "name": "url",
           "description": "Instagram post link",
-          "type": 3,
+          "type": 3, // Type 3 correspond à un paramètre de type "STRING"
           "required": true
         }
       ]
     }
-  ]
-  try
-  {
-    // api docs - https://discord.com/developers/docs/interactions/application-commands#create-global-application-command
+  ];
+
+  try {
+    // Modifier ici pour utiliser l'endpoint des commandes globales
     let discord_response = await discord_api.put(
-      `/applications/${APPLICATION_ID}/guilds/${GUILD_ID}/commands`,
+      `/applications/${APPLICATION_ID}/commands`,
       slash_commands
-    )
-    console.log(discord_response.data)
-    return res.send('commands have been registered')
-  }catch(e){
-    console.error(e.code)
-    console.error(e.response?.data)
-    return res.send(`${e.code} error from discord`)
+    );
+
+    console.log(discord_response.data);
+    return res.send('Global commands have been registered');
+  } catch (e) {
+    console.error(e.code);
+    console.error(e.response?.data);
+    return res.send(`${e.code} error from Discord`);
   }
-})
+});
 
 
 app.get('/', async (req,res) =>{
