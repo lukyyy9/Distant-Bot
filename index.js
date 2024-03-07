@@ -39,7 +39,7 @@ switch (type) {
                     data: { content: `Pong ${member.user.username}! 🏓` },
                 });
 
-            case 'share':
+            case 'video':
                 let url = data.options[0].value;
                 let videoType = '';
                 switch (new URL(url).hostname.replace('www.', '').split('.')[0].toLowerCase()+'.'){
