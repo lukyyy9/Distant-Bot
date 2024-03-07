@@ -4,4 +4,4 @@ The Distant Bot is designed to enrich user interaction within Discord servers by
 
 ## Features
 - /ping : Quickly check if the bot is responsive and operational.
-- /share [url] : Share media from Instagram, TikTok, or Twitter directly into your Discord server by providing the post's link. The bot processes these links and returns a direct link to the video or post, viewable within Discord.
+- /video [url] : Share media from Instagram, TikTok, or Twitter directly into your Discord server by providing the post's link. The bot processes these links and returns a direct link to the video or post, viewable within Discord.
