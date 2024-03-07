@@ -65,53 +65,39 @@ switch (type) {
                         videoType = videoType.charAt(0).toUpperCase() + videoType.slice(1);
                         break;
                 }
-
-                return res.send({
-                    content: `[${videoType}](${url}) shared by ${member.user.username}:\n👍 0 | 👎 0`,
-                    components: [
-                        {
-                            type: 1,
-                            components: [
-                                {
-                                    type: 2,
-                                    style: 1,
-                                    label: 'Upvote',
-                                    custom_id: 'upvote',
-                                    emoji: {
-                                        name: '👍'
+                return sentMessage = await res.send({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: {
+                        content: `[${videoType}](${url}) shared by ${member.user.username}:\n👍 0 | 👎 0`,
+                        components: [
+                            {
+                                type: 1,
+                                components: [
+                                    {
+                                        type: 2,
+                                        style: 1,
+                                        label: 'Upvote',
+                                        custom_id: 'upvote',
+                                        emoji: {
+                                            name: '👍'
+                                        }
+                                    },
+                                    {
+                                        type: 2,
+                                        style: 1,
+                                        label: 'Downvote',
+                                        custom_id: 'downvote',
+                                        emoji: {
+                                            name: '👎'
+                                        }
                                     }
-                                },
-                                {
-                                    type: 2,
-                                    style: 1,
-                                    label: 'Downvote',
-                                    custom_id: 'downvote',
-                                    emoji: {
-                                        name: '👎'
-                                    }
-                                }
-                            ]
-                        }
-                    ]
-                }).then(response => {
-                    // L'ID du message est contenu dans la réponse
-                    const messageId = response.data.id;
-            
-                    // Sauvegardez l'ID du message et l'ID de l'utilisateur qui a partagé la vidéo
-                    //saveMessageId(messageId, member.user.id);
-                    console.log('Message ID:', messageId);
-                    console.log('User ID:', member.user.id);
-            
-                    // Réponse à l'interaction Discord pour confirmer la réception
-                    return res.send({
-                        type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
-                    });
-                }).catch(error => {
-                    console.error("Erreur lors de l'envoi du message :", error);
-                    // Gérer l'erreur appropriément
-                    return res.status(500).send({ error: 'Erreur interne du serveur' });
+                                ]
+                            }
+                        ]
+                    },
                 });
-                break;
+            }
+        break;
 
     case InteractionType.MESSAGE_COMPONENT:
         switch (data.custom_id) {
