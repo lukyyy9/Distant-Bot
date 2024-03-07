@@ -65,16 +65,18 @@ switch (type) {
                 }
                 return res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    content: `[${videoType}](${url}) shared by ${member.user.username}:`,
-                    components: [{
-                        type: 1,
+                    data: {
+                        content: `[${videoType}](${url}) shared by ${member.user.username}:`,
                         components: [{
-                            type: 2,
-                            style: 1,
-                            label: '❤',
-                            custom_id: `upvote_${1}`, //todo: generate videoID instead of 1
+                            type: 1,
+                            components: [{
+                                type: 2,
+                                style: 1,
+                                label: '❤',
+                                custom_id: `upvote_${1}`, //todo: generate videoID instead of 1
+                            }]
                         }]
-                    }]
+                    }
                 });
             }
         break;
