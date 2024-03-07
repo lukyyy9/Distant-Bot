@@ -27,72 +27,72 @@ const altPlatform = {
     TwitterX: 'fxtwitter.'
 };
 
+let upvotesData = {};
+let mostUpvotedPost = { postId: null, upvotes: 0, userId: null };
+
 app.post('/interactions', verifyMiddleware, async (req, res) => {
-
     const { type, data, member } = req.body;
-
-    switch (type) {
-
-        case InteractionType.APPLICATION_COMMAND:
-            switch (data.name) {
-                case 'ping':
-                    return res.send({
-                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                        data: { content: `Pong ${member.user.username}! 🏓` },
-                    });
-
-                case 'video':
-                    let url = data.options[0].value;
-                    let videoType = '';
-                    switch (new URL(url).hostname.replace('www.', '').split('.')[0].toLowerCase()+'.'){
-                        case platform.Instagram:
-                            url = url.replace(platform.Instagram, altPlatform.Instagram);
-                            videoType = 'Reel';
-                            break;
-                        case platform.TikTok:
-                            url = url.replace(platform.TikTok, altPlatform.TikTok);
-                            videoType = 'TikTok';
-                            break;
-                        case platform.Twitter:
-                            url = url.replace(platform.Twitter, altPlatform.TwitterX);
-                            videoType = 'X';
-                            break;
-                        case platform.X:
-                            url = url.replace(platform.X, altPlatform.TwitterX);
-                            videoType = 'X';
-                            break;
-                        default:
-                            videoType = new URL(url).hostname + ' video';
-                            break;
-                    }
-                    return res.send({
-                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                        data: {
-                            content: `[${videoType}](${url}) shared by <@${member.user.id}>:`,
-                            components: [{
-                                type: 1,
-                                components: [{
-                                    type: 2,
-                                    style: 1,
-                                    label: '❤',
-                                    custom_id: `upvote_${1}`, //todo: generate videoID instead of 1
-                                }]
-                            }]
-                        }
-                    });
-                }
-            break;
-        case InteractionType.MESSAGE_COMPONENT:
-            switch (data.custom_id.split('_')[0]) {
-                case 'upvote':
-                    return res.send({
-                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                        data: { content: `<@${member.user.id}> : ❤` }
-                    });
-
+    if (type === InteractionType.APPLICATION_COMMAND) {
+        if (data.name === 'ping') {
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: { content: `Pong ${member.user.username}! 🏓` },
+            });
+        } else if (data.name === 'video') {
+            let url = data.options[0].value;
+            let videoType = '';
+            switch (new URL(url).hostname.replace('www.', '').split('.')[0].toLowerCase() + '.') {
+                case platform.Instagram:
+                    url = url.replace(platform.Instagram, altPlatform.Instagram);
+                    videoType = 'Reel';
+                    break;
+                case platform.TikTok:
+                    url = url.replace(platform.TikTok, altPlatform.TikTok);
+                    videoType = 'TikTok';
+                    break;
+                case platform.Twitter:
+                    url = url.replace(platform.Twitter, altPlatform.TwitterX);
+                    videoType = 'X';
+                    break;
+                case platform.X:
+                    url = url.replace(platform.X, altPlatform.TwitterX);
+                    videoType = 'X';
+                    break;
                 default:
+                    videoType = new URL(url).hostname + ' video';
                     break;
             }
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: `[${videoType}](${url}) shared by <@${member.user.id}>:`,
+                    components: [{
+                        type: 1,
+                        components: [{
+                            type: 2,
+                            style: 1,
+                            label: '❤',
+                            custom_id: `upvote_${data.options[0].value}`,
+                        }]
+                    }]
+                }
+            });
+        }
+    } else if (type === InteractionType.MESSAGE_COMPONENT) {
+        const [action, postId] = data.custom_id.split('_');
+        if (action === 'upvote') {
+            if (!upvotesData[postId]) {
+                upvotesData[postId] = { upvotes: 0, userId: member.user.id };
+            }
+            upvotesData[postId].upvotes += 1;
+            if (upvotesData[postId].upvotes > mostUpvotedPost.upvotes) {
+                mostUpvotedPost = { postId, upvotes: upvotesData[postId].upvotes, userId: member.user.id };
+            }
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: { content: `<@${member.user.id}> upvoted! Total upvotes: ${upvotesData[postId].upvotes}` }
+            });
+        }
     }
 });
 
@@ -112,19 +112,8 @@ app.get('/register_commands', async (req, res) => {
                 "type": 3,
                 "required": true,
             }],
-        },
-        /*{
-            "name": "music",
-            "description": "Sends all the platfomrs links for the music link provided",
-            "options": [{
-                "name": "url",
-                "description": "Streaming service music link",
-                "type": 3,
-                "required": true,
-            }],
-        }*/
+        }
     ];
-
     try {
         await discordApi.put(`/applications/${process.env.APPLICATION_ID}/commands`, slashCommands);
         res.send('Global commands have been registered');
