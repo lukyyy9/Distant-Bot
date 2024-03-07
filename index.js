@@ -65,10 +65,32 @@ switch (type) {
                 }
                 return res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: { content: `[${videoType}](${url}) shared by ${member.user.username}:` },
+                    content: `[Video Title](${videoURL}) shared by ${member.user.username}:`,
+                    components: [{
+                        type: 1,
+                        components: [{
+                            type: 2,
+                            style: 1,
+                            label: '❤',
+                            custom_id: `upvote_${1}`, //todo: generate videoID instead of 1
+                        }]
+                    }]
                 });
             }
         break;
+    case InteractionType.MESSAGE_COMPONENT:
+        switch (data.custom_id.split('_')[0]) {
+            case 'upvote':
+                return res.send({
+                    type: InteractionResponseType.UPDATE_MESSAGE,
+                    data: {
+                        content: 'Upvoted!',
+                    }
+                });
+
+            default:
+                break;
+        }
 }
 });
 
