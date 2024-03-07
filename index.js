@@ -85,7 +85,7 @@ switch (type) {
             case 'upvote':
                 return res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: { content: `You upvoted ${data.custom_id.split('_')[1]}` },
+                    data: { content: `${member.user.username} : ❤` },
                     flags: 64,
                 });
 
