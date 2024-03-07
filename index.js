@@ -25,7 +25,7 @@ const loadData = () => {
         return JSON.parse(data);
     } catch (error) {
         console.error('Error reading upvotes data file:', error);
-        return { upvotesData: {}, mostUpvotedPost: { postId: null, upvotes: 0, userId: null } };
+        return { posts: {}, users: {} };
     }
 };
 
@@ -37,53 +37,26 @@ const saveData = (data) => {
     }
 };
 
-let { upvotesData, mostUpvotedPost } = loadData();
-
-const platform = {
-    Instagram: 'instagram.',
-    TikTok: 'tiktok.',
-    Twitter: 'twitter.',
-    X: 'x.'
-};
-
-const altPlatform = {
-    Instagram: 'ddinstagram.',
-    TikTok: 'vxtiktok.',
-    TwitterX: 'fxtwitter.'
-};
+let data = loadData();
 
 app.post('/interactions', verifyMiddleware, async (req, res) => {
-    const { type, data, member } = req.body;
+    const { type, data: requestData, member } = req.body;
 
     if (type === InteractionType.APPLICATION_COMMAND) {
-        if (data.name === 'ping') {
+        if (requestData.name === 'ping') {
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                 data: { content: `Pong ${member.user.username}! 🏓` },
             });
-        } else if (data.name === 'video') {
-            let url = data.options[0].value;
+        } else if (requestData.name === 'video') {
+            let url = requestData.options[0].value;
             let videoType = '';
             switch (new URL(url).hostname.replace('www.', '').split('.')[0].toLowerCase() + '.') {
-                case platform.Instagram:
-                    url = url.replace(platform.Instagram, altPlatform.Instagram);
-                    videoType = 'Reel';
-                    break;
-                case platform.TikTok:
-                    url = url.replace(platform.TikTok, altPlatform.TikTok);
-                    videoType = 'TikTok';
-                    break;
-                case platform.Twitter:
-                    url = url.replace(platform.Twitter, altPlatform.TwitterX);
-                    videoType = 'X';
-                    break;
-                case platform.X:
-                    url = url.replace(platform.X, altPlatform.TwitterX);
-                    videoType = 'X';
-                    break;
-                default:
-                    videoType = new URL(url).hostname + ' video';
-                    break;
+                case 'instagram.': url = url.replace('instagram.', 'ddinstagram.'); videoType = 'Reel'; break;
+                case 'tiktok.': url = url.replace('tiktok.', 'vxtiktok.'); videoType = 'TikTok'; break;
+                case 'twitter.': url = url.replace('twitter.', 'fxtwitter.'); videoType = 'X'; break;
+                case 'x.': url = url.replace('x.', 'fxtwitter.'); videoType = 'X'; break;
+                default: videoType = new URL(url).hostname + ' video'; break;
             }
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -95,27 +68,46 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                             type: 2,
                             style: 1,
                             label: '❤',
-                            custom_id: `upvote_${data.options[0].value}`,
+                            custom_id: `upvote_${requestData.options[0].value}`,
                         }]
                     }]
                 }
             });
-        }
-    } else if (type === InteractionType.MESSAGE_COMPONENT) {
-        const [action, postId] = data.custom_id.split('_');
-        if (action === 'upvote') {
-            if (!upvotesData[postId]) {
-                upvotesData[postId] = { upvotes: 0, userId: member.user.id };
-            }
-            upvotesData[postId].upvotes += 1;
-            if (upvotesData[postId].upvotes > mostUpvotedPost.upvotes) {
-                mostUpvotedPost = { postId, upvotes: upvotesData[postId].upvotes, userId: member.user.id };
-            }
-            saveData({ upvotesData, mostUpvotedPost });
+        } else if (requestData.name === 'topuser') {
+            const userLeaderboard = Object.entries(data.users)
+                .sort(([, a], [, b]) => b.totalUpvotesGiven - a.totalUpvotesGiven)
+                .slice(0, 10)
+                .map(([userId, { totalUpvotesGiven }], index) => `${index + 1}. <@${userId}> with ${totalUpvotesGiven} upvotes`)
+                .join('\n');
+
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                data: { content: `<@${member.user.id}> upvoted! Total upvotes: ${upvotesData[postId].upvotes}` },
+                data: { content: `Top users by upvotes:\n${userLeaderboard}` },
             });
+        }
+    } else if (type === InteractionType.MESSAGE_COMPONENT) {
+        const [action, postId] = requestData.custom_id.split('_');
+        if (action === 'upvote') {
+            const post = data.posts[postId] || { upvotes: 0, users: [] };
+            if (!post.users.includes(member.user.id)) {
+                post.upvotes += 1;
+                post.users.push(member.user.id);
+                data.posts[postId] = post;
+
+                data.users[member.user.id] = data.users[member.user.id] || { totalUpvotesGiven: 0 };
+                data.users[member.user.id].totalUpvotesGiven += 1;
+
+                saveData(data);
+                return res.send({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: { content: `<@${member.user.id}> upvoted! Total upvotes: ${post.upvotes}` },
+                });
+            } else {
+                return res.send({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: { content: `You've already upvoted this post, <@${member.user.id}>!` },
+                });
+            }
         }
     }
 });
@@ -136,6 +128,11 @@ app.get('/register_commands', async (req, res) => {
                 type: 3,
                 required: true,
             }],
+        },
+        {
+            name: "topuser",
+            description: "Displays the leaderboard of users with the most upvotes given",
+            options: [],
         }
     ];
 
