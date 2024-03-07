@@ -28,11 +28,11 @@ const altPlatform = {
 };
 
 app.post('/interactions', verifyMiddleware, async (req, res) => {
-    
+
     const { type, data, member } = req.body;
-    
+
     switch (type) {
-        
+
         case InteractionType.APPLICATION_COMMAND:
             switch (data.name) {
                 case 'ping':
