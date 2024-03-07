@@ -80,15 +80,27 @@ app.get('/register_commands', async (req, res) => {
             "options": [],
         },
         {
-            "name": "share",
+            "name": "video",
             "description": "Sends video from a social media post",
             "options": [{
                 "name": "url",
-                "description": "Instagram post link",
+                "description": "Social network post link",
                 "type": 3,
                 "required": true,
             }],
         },
+        /*
+        {
+            "name": "music",
+            "description": "Sends all the platfomrs links for the music link provided",
+            "options": [{
+                "name": "url",
+                "description": "Streaming service music link",
+                "type": 3,
+                "required": true,
+            }],
+        }
+        */
     ];
 
     try {
