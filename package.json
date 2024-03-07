@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon index.js",
-    "start": "node index.js"
+    "start":"node index.js"
   },
   "repository": {
     "type": "git",
@@ -19,7 +19,6 @@
   },
   "homepage": "https://github.com/korostelevm/starter-discord-bot#readme",
   "dependencies": {
-    "aws-sdk": "^2.1572.0",
     "axios": "^0.27.2",
     "body-parser": "^1.20.0",
     "discord-interactions": "^3.2.0",
