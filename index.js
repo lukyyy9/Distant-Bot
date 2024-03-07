@@ -1,6 +1,8 @@
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
 const { InteractionType, InteractionResponseType, verifyKeyMiddleware } = require('discord-interactions');
 
 const app = express();
@@ -15,23 +17,44 @@ const discordApi = axios.create({
 
 const verifyMiddleware = verifyKeyMiddleware(process.env.PUBLIC_KEY);
 
+const dataFilePath = path.join(__dirname, 'upvote.json');
+
+const loadData = () => {
+    try {
+        const data = fs.readFileSync(dataFilePath, 'utf8');
+        return JSON.parse(data);
+    } catch (error) {
+        console.error('Error reading upvotes data file:', error);
+        return { upvotesData: {}, mostUpvotedPost: { postId: null, upvotes: 0, userId: null } };
+    }
+};
+
+const saveData = (data) => {
+    try {
+        fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2), 'utf8');
+    } catch (error) {
+        console.error('Error writing to upvotes data file:', error);
+    }
+};
+
+let { upvotesData, mostUpvotedPost } = loadData();
+
 const platform = {
     Instagram: 'instagram.',
     TikTok: 'tiktok.',
     Twitter: 'twitter.',
     X: 'x.'
 };
+
 const altPlatform = {
     Instagram: 'ddinstagram.',
     TikTok: 'vxtiktok.',
     TwitterX: 'fxtwitter.'
 };
 
-let upvotesData = {};
-let mostUpvotedPost = { postId: null, upvotes: 0, userId: null };
-
 app.post('/interactions', verifyMiddleware, async (req, res) => {
     const { type, data, member } = req.body;
+
     if (type === InteractionType.APPLICATION_COMMAND) {
         if (data.name === 'ping') {
             return res.send({
@@ -88,9 +111,10 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             if (upvotesData[postId].upvotes > mostUpvotedPost.upvotes) {
                 mostUpvotedPost = { postId, upvotes: upvotesData[postId].upvotes, userId: member.user.id };
             }
+            saveData({ upvotesData, mostUpvotedPost });
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                data: { content: `<@${member.user.id}> upvoted! Total upvotes: ${upvotesData[postId].upvotes}` }
+                data: { content: `<@${member.user.id}> upvoted! Total upvotes: ${upvotesData[postId].upvotes}` },
             });
         }
     }
@@ -99,21 +123,22 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 app.get('/register_commands', async (req, res) => {
     const slashCommands = [
         {
-            "name": "ping",
-            "description": "Pings Distant",
-            "options": [],
+            name: "ping",
+            description: "Pings Distant",
+            options: [],
         },
         {
-            "name": "video",
-            "description": "Sends video from a social media post",
-            "options": [{
-                "name": "url",
-                "description": "Social network post link",
-                "type": 3,
-                "required": true,
+            name: "video",
+            description: "Sends video from a social media post",
+            options: [{
+                name: "url",
+                description: "Social network post link",
+                type: 3,
+                required: true,
             }],
         }
     ];
+
     try {
         await discordApi.put(`/applications/${process.env.APPLICATION_ID}/commands`, slashCommands);
         res.send('Global commands have been registered');
@@ -124,7 +149,7 @@ app.get('/register_commands', async (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.redirect(`https://discord.com/oauth2/authorize?client_id=1212077510431608973&permissions=2048&scope=bot+applications.commands`);
+    res.redirect(`https://discord.com/oauth2/authorize?client_id=${process.env.CLIENT_ID}&permissions=2048&scope=bot+applications.commands`);
 });
 
 const PORT = process.env.PORT || 8999;
