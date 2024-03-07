@@ -39,12 +39,39 @@ client.on('interactionCreate', async interaction => {
 
     const { commandName } = interaction;
 
-    if (commandName === 'ping') {
-        await interaction.reply(`Pong! 🏓`);
-    } else if (commandName === 'video') {
-        let url = interaction.options.getString('url');
-        // Votre logique pour traiter l'URL de la vidéo va ici
-        await interaction.reply(`Vidéo traitée: ${url}`);
+    switch (commandName) {
+        case 'ping':
+            await interaction.reply(`Pong! 🏓`);
+            break;
+        case 'video':
+            let url = data.options[0].value;
+            let videoType = '';
+            switch (new URL(url).hostname.replace('www.', '').split('.')[0].toLowerCase()+'.'){
+                case platform.Instagram:
+                    url = url.replace(platform.Instagram, altPlatform.Instagram);
+                    videoType = 'Reel';
+                    break;
+                case platform.TikTok:
+                    url = url.replace(platform.TikTok, altPlatform.TikTok);
+                    videoType = 'TikTok';
+                    break;
+                case platform.Twitter:
+                    url = url.replace(platform.Twitter, altPlatform.TwitterX);
+                    videoType = 'X';
+                    break;
+                case platform.X:
+                    url = url.replace(platform.X, altPlatform.TwitterX);
+                    videoType = 'X';
+                    break;
+                default:
+                    videoType = new URL(url).hostname + ' video';
+                    break;
+            }
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: { content: `[${videoType}](${url}) shared by ${member.user.username}:` },
+            });
+            break;
     }
 });
 
@@ -57,7 +84,6 @@ app.get('/', (req, res) => {
 const PORT = process.env.PORT || 8999;
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
 
-// Vous devriez également enregistrer vos commandes slash, soit via un script séparé, soit au démarrage de votre application
 client.application?.commands.create({
     name: 'ping',
     description: 'Pings Distant'
