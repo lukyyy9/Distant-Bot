@@ -30,46 +30,47 @@ const altPlatform = {
 app.post('/interactions', verifyMiddleware, async (req, res) => {
     const { type, data, member } = req.body;
 
-switch (type) {
-    case InteractionType.APPLICATION_COMMAND:
-        switch (data.name) {
-            case 'ping':
-                return res.send({
-                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: { content: `Pong ${member.user.username}! 🏓` },
-                });
+    switch (type) {
+        case InteractionType.APPLICATION_COMMAND:
+            switch (data.name) {
+                case 'ping':
+                    return res.send({
+                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                        data: { content: `Pong ${member.user.username}! 🏓` },
+                    });
 
-            case 'share':
-                let url = data.options[0].value;
-                let videoType = '';
-                switch (new URL(url).hostname.replace('www.', '').split('.')[0].toLowerCase()+'.'){
-                    case platform.Instagram:
-                        url = url.replace(platform.Instagram, altPlatform.Instagram);
-                        videoType = 'Reel';
-                        break;
-                    case platform.TikTok:
-                        url = url.replace(platform.TikTok, altPlatform.TikTok);
-                        videoType = 'TikTok';
-                        break;
-                    case platform.Twitter:
-                        url = url.replace(platform.Twitter, altPlatform.TwitterX);
-                        videoType = 'X';
-                        break;
-                    case platform.X:
-                        url = url.replace(platform.X, altPlatform.TwitterX);
-                        videoType = 'X';
-                        break;
-                    default:
-                        videoType = new URL(url).hostname + ' video';
-                        break;
-                }
-                return res.send({
-                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: { content: `[${videoType}](${url}) shared by ${member.user.username}:` },
-                });
+                case 'share':
+                    let url = data.options[0].value;
+                    let videoType = '';
+                    console.log(new URL(url).hostname.replace('www.', '').split('.')[0].toLowerCase());
+                    switch (new URL(url).hostname.replace('www.', '').split('.')[0].toLowerCase()+'.'){
+                        case platform.Instagram:
+                            url = url.replace(platform.Instagram, altPlatform.Instagram);
+                            videoType = 'Reel';
+                            break;
+                        case platform.TikTok:
+                            url = url.replace(platform.TikTok, altPlatform.TikTok);
+                            videoType = 'TikTok';
+                            break;
+                        case platform.Twitter:
+                            url = url.replace(platform.Twitter, altPlatform.TwitterX);
+                            videoType = 'X';
+                            break;
+                        case platform.X:
+                            url = url.replace(platform.X, altPlatform.TwitterX);
+                            videoType = 'X';
+                            break;
+                        default:
+                            videoType = new URL(url).hostname;
+                            break;
+                    }
+                    return res.send({
+                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                        data: { content: `[${videoType}](${url}) shared by ${member.user.username}:` },
+                    });
             }
-        break;
-}
+            break;
+    }
 });
 
 app.get('/register_commands', async (req, res) => {
