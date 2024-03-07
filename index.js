@@ -86,7 +86,33 @@ switch (type) {
                 return res.send({
                     type: InteractionResponseType.UPDATE_MESSAGE,
                     data: {
-                        content: 'Upvoted!',
+                        content: `[${videoType}](${url}) shared by ${member.user.username}:`,
+                        components: [{
+                            type: 1,
+                            components: [{
+                                type: 2,
+                                style: 4,
+                                label: '💔',
+                                custom_id: `downvote_${1}`, //todo: generate videoID instead of 1
+                            }]
+                        }]
+                    }
+                });
+
+            case 'downvote':
+                return res.send({
+                    type: InteractionResponseType.UPDATE_MESSAGE,
+                    data: {
+                        content: `[${videoType}](${url}) shared by ${member.user.username}:`,
+                        components: [{
+                            type: 1,
+                            components: [{
+                                type: 2,
+                                style: 1,
+                                label: '❤',
+                                custom_id: `upvote_${1}`, //todo: generate videoID instead of 1
+                            }]
+                        }]
                     }
                 });
 
