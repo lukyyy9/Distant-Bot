@@ -26,7 +26,6 @@ const altPlatform = {
     TikTok: 'vxtiktok.',
     TwitterX: 'fxtwitter.'
 };
-let sentMessage = null;
 
 app.post('/interactions', verifyMiddleware, async (req, res) => {
     const { type, data, member } = req.body;
@@ -37,7 +36,7 @@ switch (type) {
             case 'ping':
                 return res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: { content: `Pong ${member.user.username}! 🏓\n${sentMessage.id}` },
+                    data: { content: `Pong ${member.user.username}! 🏓` },
                 });
 
             case 'video':
@@ -62,56 +61,13 @@ switch (type) {
                         break;
                     default:
                         videoType = new URL(url).hostname + ' video';
-                        videoType = videoType.charAt(0).toUpperCase() + videoType.slice(1);
                         break;
                 }
-                return sentMessage = await res.send({
+                return res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: {
-                        content: `[${videoType}](${url}) shared by ${member.user.username}:\n👍 0 | 👎 0`,
-                        components: [
-                            {
-                                type: 1,
-                                components: [
-                                    {
-                                        type: 2,
-                                        style: 1,
-                                        label: 'Upvote',
-                                        custom_id: 'upvote',
-                                        emoji: {
-                                            name: '👍'
-                                        }
-                                    },
-                                    {
-                                        type: 2,
-                                        style: 1,
-                                        label: 'Downvote',
-                                        custom_id: 'downvote',
-                                        emoji: {
-                                            name: '👎'
-                                        }
-                                    }
-                                ]
-                            }
-                        ]
-                    },
+                    data: { content: `[${videoType}](${url}) shared by ${member.user.username}:` },
                 });
             }
-        break;
-
-    case InteractionType.MESSAGE_COMPONENT:
-        switch (data.custom_id) {
-            case 'upvote':
-                console.log('upvote');
-                return res.send({
-                    //todo: update message with upvote count
-                });
-            case 'downvote':
-                console.log('downvote');
-                return res.send({
-                    //todo: update message with downvote count
-                });
-        }
         break;
 }
 });
