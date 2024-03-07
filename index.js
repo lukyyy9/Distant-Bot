@@ -1,75 +1,118 @@
 require('dotenv').config();
-const { Client, Intents } = require('discord.js');
 const express = require('express');
 const axios = require('axios');
+const { InteractionType, InteractionResponseType, verifyKeyMiddleware } = require('discord-interactions');
 
 const app = express();
 app.use(express.json());
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
-
-client.once('ready', async () => {
-    console.log(`Connecté en tant que ${client.user.tag}!`);
-
-    // Enregistrement global des commandes
-    const data = [
-        {
-            name: 'ping',
-            description: 'Répond avec Pong!',
-        },
-        {
-            name: 'video',
-            description: 'Envoie une vidéo à partir d’un post de médias sociaux',
-            options: [{
-                name: 'url',
-                description: 'Lien du post sur les réseaux sociaux',
-                type: 'STRING',
-                required: true,
-            }],
-        },
-    ];
-
-    await client.application?.commands.set(data);
-    console.log('Les commandes slash globales ont été enregistrées.');
+const discordApi = axios.create({
+    baseURL: 'https://discord.com/api/',
+    headers: {
+        "Authorization": `Bot ${process.env.TOKEN}`,
+    },
 });
 
+const verifyMiddleware = verifyKeyMiddleware(process.env.PUBLIC_KEY);
 
-client.on('interactionCreate', async interaction => {
-    if (!interaction.isCommand()) return;
+const platform = {
+    Instagram: 'instagram.',
+    TikTok: 'tiktok.',
+    Twitter: 'twitter.',
+    X: 'x.'
+};
+const altPlatform = {
+    Instagram: 'ddinstagram.',
+    TikTok: 'vxtiktok.',
+    TwitterX: 'fxtwitter.'
+};
 
-    const { commandName } = interaction;
+app.post('/interactions', verifyMiddleware, async (req, res) => {
+    const { type, data, member } = req.body;
 
-    if (commandName === 'ping') {
-        await interaction.reply(`Pong! 🏓`);
-    } else if (commandName === 'video') {
-        let url = interaction.options.getString('url');
-        // Votre logique pour traiter l'URL de la vidéo va ici
-        await interaction.reply(`Vidéo traitée: ${url}`);
+switch (type) {
+    case InteractionType.APPLICATION_COMMAND:
+        switch (data.name) {
+            case 'ping':
+                return res.send({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: { content: `Pong ${member.user.username}! 🏓` },
+                });
+
+            case 'video':
+                let url = data.options[0].value;
+                let videoType = '';
+                switch (new URL(url).hostname.replace('www.', '').split('.')[0].toLowerCase()+'.'){
+                    case platform.Instagram:
+                        url = url.replace(platform.Instagram, altPlatform.Instagram);
+                        videoType = 'Reel';
+                        break;
+                    case platform.TikTok:
+                        url = url.replace(platform.TikTok, altPlatform.TikTok);
+                        videoType = 'TikTok';
+                        break;
+                    case platform.Twitter:
+                        url = url.replace(platform.Twitter, altPlatform.TwitterX);
+                        videoType = 'X';
+                        break;
+                    case platform.X:
+                        url = url.replace(platform.X, altPlatform.TwitterX);
+                        videoType = 'X';
+                        break;
+                    default:
+                        videoType = new URL(url).hostname + ' video';
+                        break;
+                }
+                return res.send({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: { content: `[${videoType}](${url}) shared by ${member.user.username}:` },
+                });
+            }
+        break;
+}
+});
+
+app.get('/register_commands', async (req, res) => {
+    const slashCommands = [
+        {
+            "name": "ping",
+            "description": "Pings Distant",
+            "options": [],
+        },
+        {
+            "name": "video",
+            "description": "Sends video from a social media post",
+            "options": [{
+                "name": "url",
+                "description": "Social network post link",
+                "type": 3,
+                "required": true,
+            }],
+        },
+        /*{
+            "name": "music",
+            "description": "Sends all the platfomrs links for the music link provided",
+            "options": [{
+                "name": "url",
+                "description": "Streaming service music link",
+                "type": 3,
+                "required": true,
+            }],
+        }*/
+    ];
+
+    try {
+        await discordApi.put(`/applications/${process.env.APPLICATION_ID}/commands`, slashCommands);
+        res.send('Global commands have been registered');
+    } catch (error) {
+        console.error('Error registering commands:', error);
+        res.status(500).send('Error registering global commands');
     }
 });
 
-client.login(process.env.TOKEN);
-
 app.get('/', (req, res) => {
-    res.redirect(`https://discord.com/oauth2/authorize?client_id=${client.user.id}&permissions=2048&scope=bot+applications.commands`);
+    res.redirect(`https://discord.com/oauth2/authorize?client_id=1212077510431608973&permissions=2048&scope=bot+applications.commands`);
 });
 
 const PORT = process.env.PORT || 8999;
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
-
-// Vous devriez également enregistrer vos commandes slash, soit via un script séparé, soit au démarrage de votre application
-client.application?.commands.create({
-    name: 'ping',
-    description: 'Pings Distant'
-});
-
-client.application?.commands.create({
-    name: 'video',
-    description: 'Sends video from a social media post',
-    options: [{
-        name: 'url',
-        description: 'Social network post link',
-        type: 'STRING',
-        required: true,
-    }]
-});
