@@ -84,10 +84,9 @@ switch (type) {
         switch (data.custom_id.split('_')[0]) {
             case 'upvote':
                 return res.send({
-                    type: InteractionResponseType.UPDATE_MESSAGE,
-                    data: {
-                        content: 'Upvoted!',
-                    }
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: { content: `You upvoted ${data.custom_id.split('_')[1]}` },
+                    flags: 64,
                 });
 
             default:
