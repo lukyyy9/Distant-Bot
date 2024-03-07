@@ -37,7 +37,7 @@ switch (type) {
             case 'ping':
                 return res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: { content: `Pong ${member.user.username}! 🏓` },
+                    data: { content: `Pong ${member.user.username}! 🏓\n${sentMessage.id}` },
                 });
 
             case 'video':
