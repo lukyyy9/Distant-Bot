@@ -2,9 +2,25 @@ require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const { InteractionType, InteractionResponseType, verifyKeyMiddleware } = require('discord-interactions');
+const WebSocket = require('ws');
 
+const ws = new WebSocket('wss://gateway.discord.gg/?v=6&encoding=json');
 const app = express();
 app.use(express.json());
+
+ws.on('open', function open() {
+    ws.send(JSON.stringify({
+      op: 2,
+      d: {
+        token: "your-bot-token",
+        properties: {},
+        presence: {
+          status: 'online',
+          afk: false
+        }
+      }
+    }));
+  });
 
 const discordApi = axios.create({
     baseURL: 'https://discord.com/api/',
