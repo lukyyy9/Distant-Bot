@@ -2,8 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const { InteractionType, InteractionResponseType, verifyKeyMiddleware } = require('discord-interactions');
-const AWS = require("aws-sdk");
-const s3 = new AWS.S3()
+/*const AWS = require("aws-sdk");
+const s3 = new AWS.S3()*/
 
 const app = express();
 app.use(express.json());
