@@ -65,7 +65,7 @@ switch (type) {
                 }
                 return res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    content: `[Video Title](${url}) shared by ${member.user.username}:`,
+                    content: `[${videoType}](${url}) shared by ${member.user.username}:`,
                     components: [{
                         type: 1,
                         components: [{
