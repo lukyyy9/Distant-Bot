@@ -2,8 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const { InteractionType, InteractionResponseType, verifyKeyMiddleware } = require('discord-interactions');
-const AWS = require("aws-sdk");
-const s3 = new AWS.S3()
 
 const app = express();
 app.use(express.json());
@@ -41,7 +39,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                         data: { content: `Pong ${member.user.username}! 🏓` },
                     });
 
-                case 'video':
+                case 'share':
                     let url = data.options[0].value;
                     let videoType = '';
                     console.log(new URL(url).hostname.replace('www.', '').split('.')[0].toLowerCase());
