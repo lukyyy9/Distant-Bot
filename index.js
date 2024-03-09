@@ -1,30 +1,9 @@
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
 const { InteractionType, InteractionResponseType, verifyKeyMiddleware } = require('discord-interactions');
-const admin = require('firebase-admin');
-
-const firebasePrivateKey = "AIzaSyCIQETZPJ49n51ZiKDpHO2vvynL2qZyt7g";
-
-const firebaseConfig = {
-	apiKey: "AIzaSyCIQETZPJ49n51ZiKDpHO2vvynL2qZyt7g",
-	authDomain: "distant-8bf0b.firebaseapp.com",
-	projectId: "distant-8bf0b",
-	storageBucket: "distant-8bf0b.appspot.com",
-	messagingSenderId: "923400850699",
-	appId: "1:923400850699:web:dd5ab78e3be598214d260e",
-	measurementId: "G-HF6JE9R4F3"
-};
-admin.initializeApp({
-    credential: admin.credential.cert({
-        projectId: "distant-8bf0b",
-        clientEmail: "leminemahjoub@gmail.com",
-        privateKey: "AIzaSyCIQETZPJ49n51ZiKDpHO2vvynL2qZyt7g",
-    }),
-	databaseURL: "https://distant-8bf0b-default-rtdb.firebaseio.com"
-});
-
-const db = admin.firestore();
 
 const app = express();
 app.use(express.json());
@@ -37,6 +16,28 @@ const discordApi = axios.create({
 });
 
 const verifyMiddleware = verifyKeyMiddleware(process.env.PUBLIC_KEY);
+
+const dataFilePath = path.join(__dirname, 'upvote.json');
+
+const loadData = () => {
+    try {
+        const data = fs.readFileSync(dataFilePath, 'utf8');
+        return JSON.parse(data);
+    } catch (error) {
+        console.error('Error reading upvotes data file:', error);
+        return { posts: {}, users: {} };
+    }
+};
+
+const saveData = (data) => {
+    try {
+        fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2), 'utf8');
+    } catch (error) {
+        console.error('Error writing to upvotes data file:', error);
+    }
+};
+
+let data = loadData();
 
 app.post('/interactions', verifyMiddleware, async (req, res) => {
     const { type, data: requestData, member } = req.body;
@@ -73,9 +74,10 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 }
             });
         } else if (requestData.name === 'topuser') {
-            const usersSnapshot = await db.collection('users').orderBy('totalUpvotesGiven', 'desc').limit(10).get();
-            const userLeaderboard = usersSnapshot.docs
-                .map((doc, index) => `${index + 1}. <@${doc.id}> with ${doc.data().totalUpvotesGiven} upvotes`)
+            const userLeaderboard = Object.entries(data.users)
+                .sort(([, a], [, b]) => b.totalUpvotesGiven - a.totalUpvotesGiven)
+                .slice(0, 10)
+                .map(([userId, { totalUpvotesGiven }], index) => `${index + 1}. <@${userId}> with ${totalUpvotesGiven} upvotes`)
                 .join('\n');
 
             return res.send({
@@ -86,28 +88,26 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
         const [action, postId] = requestData.custom_id.split('_');
         if (action === 'upvote') {
-            const postRef = db.collection('posts').doc(postId);
-            await db.runTransaction(async (transaction) => {
-                const postDoc = await transaction.get(postRef);
-                const post = postDoc.data();
-                transaction.update(postRef, {
-                    upvotes: admin.firestore.FieldValue.increment(1),
-                    users: admin.firestore.FieldValue.arrayUnion(member.user.id)
-                });
+            const post = data.posts[postId] || { upvotes: 0, users: [] };
+            if (!post.users.includes(member.user.id)) {
+                post.upvotes += 1;
+                post.users.push(member.user.id);
+                data.posts[postId] = post;
 
-                const userRef = db.collection('users').doc(member.user.id);
-                transaction.set(userRef, { totalUpvotesGiven: admin.firestore.FieldValue.increment(1) }, { merge: true });
-            }).then(() => {
-                res.send({
+                data.users[member.user.id] = data.users[member.user.id] || { totalUpvotesGiven: 0 };
+                data.users[member.user.id].totalUpvotesGiven += 1;
+
+                saveData(data);
+                return res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: { content: `<@${member.user.id}> upvoted!` },
+                    data: { content: `<@${member.user.id}> upvoted! Total upvotes: ${post.upvotes}` },
                 });
-            }).catch(() => {
-                res.send({
+            } else {
+                return res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                     data: { content: `You've already upvoted this post, <@${member.user.id}>!` },
                 });
-            });
+            }
         }
     }
 });
@@ -133,7 +133,7 @@ app.get('/register_commands', async (req, res) => {
             name: "topuser",
             description: "Displays the leaderboard of users with the most upvotes given",
             options: [],
-        },
+        }
     ];
 
     try {
