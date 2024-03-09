@@ -4,15 +4,24 @@ const axios = require('axios');
 const { InteractionType, InteractionResponseType, verifyKeyMiddleware } = require('discord-interactions');
 const admin = require('firebase-admin');
 
-const firebasePrivateKey = process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n');
+const firebasePrivateKey = "AIzaSyCIQETZPJ49n51ZiKDpHO2vvynL2qZyt7g";
 
+const firebaseConfig = {
+	apiKey: "AIzaSyCIQETZPJ49n51ZiKDpHO2vvynL2qZyt7g",
+	authDomain: "distant-8bf0b.firebaseapp.com",
+	projectId: "distant-8bf0b",
+	storageBucket: "distant-8bf0b.appspot.com",
+	messagingSenderId: "923400850699",
+	appId: "1:923400850699:web:dd5ab78e3be598214d260e",
+	measurementId: "G-HF6JE9R4F3"
+};
 admin.initializeApp({
     credential: admin.credential.cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: firebasePrivateKey,
+        projectId: "distant-8bf0b",
+        clientEmail: "leminemahjoub@gmail.com",
+        privateKey: "AIzaSyCIQETZPJ49n51ZiKDpHO2vvynL2qZyt7g",
     }),
-    databaseURL: process.env.FIREBASE_DATABASE_URL
+	databaseURL: "https://distant-8bf0b-default-rtdb.firebaseio.com"
 });
 
 const db = admin.firestore();
@@ -81,9 +90,6 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             await db.runTransaction(async (transaction) => {
                 const postDoc = await transaction.get(postRef);
                 const post = postDoc.data();
-                if (!post || post.users.includes(member.user.id)) {
-                    return Promise.reject('Already upvoted');
-                }
                 transaction.update(postRef, {
                     upvotes: admin.firestore.FieldValue.increment(1),
                     users: admin.firestore.FieldValue.arrayUnion(member.user.id)
