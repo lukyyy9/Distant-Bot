@@ -1,28 +1,18 @@
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
-const path = require('path');
 const { InteractionType, InteractionResponseType, verifyKeyMiddleware } = require('discord-interactions');
 const admin = require('firebase-admin');
 
-
-const firebaseConfig = {
-    apiKey: "AIzaSyCIQETZPJ49n51ZiKDpHO2vvynL2qZyt7g",
-    authDomain: "distant-8bf0b.firebaseapp.com",
-    projectId: "distant-8bf0b",
-    storageBucket: "distant-8bf0b.appspot.com",
-    messagingSenderId: "923400850699",
-    appId: "1:923400850699:web:dd5ab78e3be598214d260e",
-    measurementId: "G-HF6JE9R4F3"
-};
+const firebasePrivateKey = process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n');
 
 admin.initializeApp({
     credential: admin.credential.cert({
-        projectId: firebaseConfig.projectId,
-        clientEmail: "firebase-adminsdk-xyz@distant-8bf0b.iam.gserviceaccount.com",
-        privateKey: `-----BEGIN PRIVATE KEY-----\n${process.env.FIREBASE_PRIVATE_KEY}\n-----END PRIVATE KEY-----\n`,
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: firebasePrivateKey,
     }),
-    databaseURL: "https://distant-8bf0b.firebaseio.com"
+    databaseURL: process.env.FIREBASE_DATABASE_URL
 });
 
 const db = admin.firestore();
@@ -30,14 +20,12 @@ const db = admin.firestore();
 const app = express();
 app.use(express.json());
 
-
 const discordApi = axios.create({
-	baseURL: 'https://discord.com/api/',
-	headers: {
-		"Authorization": `Bot ${process.env.TOKEN}`,
-	},
+    baseURL: 'https://discord.com/api/',
+    headers: {
+        "Authorization": `Bot ${process.env.TOKEN}`,
+    },
 });
-
 
 const verifyMiddleware = verifyKeyMiddleware(process.env.PUBLIC_KEY);
 
@@ -94,7 +82,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 const postDoc = await transaction.get(postRef);
                 const post = postDoc.data();
                 if (!post || post.users.includes(member.user.id)) {
-                    throw new Error('Already upvoted or post not found');
+                    return Promise.reject('Already upvoted');
                 }
                 transaction.update(postRef, {
                     upvotes: admin.firestore.FieldValue.increment(1),
@@ -108,7 +96,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                     data: { content: `<@${member.user.id}> upvoted!` },
                 });
-            }).catch((error) => {
+            }).catch(() => {
                 res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                     data: { content: `You've already upvoted this post, <@${member.user.id}>!` },
@@ -139,7 +127,7 @@ app.get('/register_commands', async (req, res) => {
             name: "topuser",
             description: "Displays the leaderboard of users with the most upvotes given",
             options: [],
-        }
+        },
     ];
 
     try {
