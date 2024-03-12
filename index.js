@@ -109,6 +109,11 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 });
             }
         }
+    } else if (requestData.name === 'spotify' || requestData.name === 'deezer' || requestData.name === 'applemusic') {
+        return res.send({
+            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+            data: { content: `${member.user.username} used the ${requestData.name} command` },
+        }); // Temporary return !
     }
 });
 
@@ -132,6 +137,21 @@ app.get('/register_commands', async (req, res) => {
         {
             name: "topuser",
             description: "Displays the leaderboard of users with the most upvotes given",
+            options: [],
+        },
+        {
+            name: "spotify",
+            description: "Displays Spotify + discord user",
+            options: [],
+        },
+        {
+            name: "deezer",
+            description: "Displays Deezer + discord user",
+            options: [],
+        },
+        {
+            name: "applemusic",
+            description: "Displays Apple Music + discord user",
             options: [],
         }
     ];
