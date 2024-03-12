@@ -84,6 +84,11 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                 data: { content: `Top users by upvotes:\n${userLeaderboard}` },
             });
+        } else if (requestData.name === 'spotify' || requestData.name === 'deezer' || requestData.name === 'applemusic') {
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: { content: `${member.user.username} used the ${requestData.name} command` },
+            }); // Temporary return !
         }
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
         const [action, postId] = requestData.custom_id.split('_');
@@ -109,11 +114,6 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 });
             }
         }
-    } else if (requestData.name === 'spotify' || requestData.name === 'deezer' || requestData.name === 'applemusic') {
-        return res.send({
-            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-            data: { content: `${member.user.username} used the ${requestData.name} command` },
-        }); // Temporary return !
     }
 });
 
