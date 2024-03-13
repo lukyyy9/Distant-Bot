@@ -135,27 +135,22 @@ app.get('/register_commands', async (req, res) => {
             }],
         },
         {
+            name: "music",
+            description: "Sends the music link from all music streaming services",
+            options: [],
+        },
+        {
             name: "topuser",
             description: "Displays the leaderboard of users with the most upvotes given",
             options: [],
         },
-        {
-            name: "spotify",
-            description: "Displays Spotify + discord user",
-            options: [],
-        },
-        {
-            name: "deezer",
-            description: "Displays Deezer + discord user",
-            options: [],
-        },
-        {
-            name: "applemusic",
-            description: "Displays Apple Music + discord user",
-            options: [],
-        }
     ];
-
+    //Delete global commands
+    try {
+        await discordApi.delete(`/applications/${process.env.APPLICATION_ID}/commands`);
+    } catch (error) {
+        console.error('Error deleting commands:', error);
+    // Register global commands
     try {
         await discordApi.put(`/applications/${process.env.APPLICATION_ID}/commands`, slashCommands);
         res.send('Global commands have been registered');
@@ -166,7 +161,7 @@ app.get('/register_commands', async (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.redirect(`https://discord.com/oauth2/authorize?client_id=${process.env.CLIENT_ID}&permissions=2048&scope=bot+applications.commands`);
+    res.redirect(`https://discord.com/oauth2/authorize?client_id=1212077510431608973&permissions=2048&scope=bot+applications.commands`);
 });
 
 const PORT = process.env.PORT || 8999;
