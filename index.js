@@ -105,13 +105,19 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 saveData(data);
                 return res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: { content: `<@${member.user.id}> upvoted! Total upvotes: ${post.upvotes}` },
+                    data: { 
+                        content: `<@${member.user.id}> upvoted! Total upvotes: ${post.upvotes}`,
+                        flags: 64
+                    },
                 });
-            } else {
-                return res.send({
-                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: { content: `You've already upvoted this post, <@${member.user.id}>!` },
-                });
+                } else {
+                    return res.send({
+                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                        data: { 
+                            content: `You've already upvoted this post, <@${member.user.id}>!`,
+                            flags: 64
+                        },
+                    });
             }
         }
     }
