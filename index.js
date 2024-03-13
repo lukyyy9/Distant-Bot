@@ -150,6 +150,8 @@ app.get('/register_commands', async (req, res) => {
         await discordApi.delete(`/applications/${process.env.APPLICATION_ID}/commands`);
     } catch (error) {
         console.error('Error deleting commands:', error);
+        res.status(500).send('Error deleting global commands');
+    }
     // Register global commands
     try {
         await discordApi.put(`/applications/${process.env.APPLICATION_ID}/commands`, slashCommands);
