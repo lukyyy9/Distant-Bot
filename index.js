@@ -46,7 +46,10 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
         if (requestData.name === 'ping') {
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                data: { content: `Pong ${member.user.username}! 🏓` },
+                data: {
+                    content: `Pong ${member.user.username}! 🏓`,
+                    flags: 64
+                },
             });
         } else if (requestData.name === 'video') {
             let url = requestData.options[0].value;
