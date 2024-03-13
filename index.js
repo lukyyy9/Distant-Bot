@@ -145,12 +145,24 @@ app.get('/register_commands', async (req, res) => {
             options: [],
         },
     ];
-    //Delete global commands
+    //Get global commands
     try {
-        await discordApi.delete(`/applications/${process.env.APPLICATION_ID}/commands`);
+        const response = await discordApi.get(`/applications/${process.env.APPLICATION_ID}/commands`);
+        const commands = response.data;
+        console.log('Global commands:', commands);
     } catch (error) {
-        console.error('Error deleting commands:', error);
-        res.status(500).send('Error deleting global commands');
+        console.error('Error getting global commands:', error);
+    }
+    //Delete each global commands
+    try {
+        const response = await discordApi.get(`/applications/${process.env.APPLICATION_ID}/commands`);
+        const commands = response.data;
+        for (const command of commands) {
+            await discordApi.delete(`/applications/${process.env.APPLICATION_ID}/commands/${command.id}`);
+        }
+        console.log('Global commands have been deleted');
+    } catch (error) {
+        console.error('Error deleting global commands:', error);
     }
     // Register global commands
     try {
