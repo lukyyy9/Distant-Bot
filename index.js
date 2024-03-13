@@ -126,7 +126,7 @@ app.get('/register_commands', async (req, res) => {
         },
         {
             name: "video",
-            description: "Sends video from a social media post",
+            description: "Sends the video from a social media post",
             options: [{
                 name: "url",
                 description: "Social network post link",
@@ -135,33 +135,30 @@ app.get('/register_commands', async (req, res) => {
             }],
         },
         {
+            name: "music",
+            description: "Sends the music link from all music streaming services",
+            options: [],
+        },
+        {
             name: "topuser",
             description: "Displays the leaderboard of users with the most upvotes given",
             options: [],
         },
-        {
-            name: "spotify",
-            description: "Displays Spotify + discord user",
-            options: [],
-        },
-        {
-            name: "deezer",
-            description: "Displays Deezer + discord user",
-            options: [],
-        },
-        {
-            name: "applemusic",
-            description: "Displays Apple Music + discord user",
-            options: [],
-        }
+        
     ];
 
     try {
-        await discordApi.put(`/applications/${process.env.APPLICATION_ID}/commands`, slashCommands);
-        res.send('Global commands have been registered');
+        const existingCommandsResponse = await axios.get(`/applications/${process.env.APPLICATION_ID}/commands`);
+        const existingCommands = existingCommandsResponse.data;
+        const commandsToDelete = existingCommands.filter(command => 
+            !slashCommands.some(newCommand => newCommand.name === command.name));
+        for (const command of commandsToDelete) {
+            await axios.delete(`/applications/${process.env.APPLICATION_ID}/commands/${command.id}`);
+        }
+        await axios.put(`/applications/${process.env.APPLICATION_ID}/commands`, slashCommands);
+        console.log('Global commands have been updated successfully');
     } catch (error) {
-        console.error('Error registering commands:', error);
-        res.status(500).send('Error registering global commands');
+        console.error('Error updating commands:', error);
     }
 });
 
