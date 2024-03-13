@@ -7,6 +7,7 @@ const { InteractionType, InteractionResponseType, verifyKeyMiddleware } = requir
 
 const app = express();
 app.use(express.json());
+const appId = "1212077510431608973";
 
 const discordApi = axios.create({
     baseURL: 'https://discord.com/api/',
@@ -148,14 +149,14 @@ app.get('/register_commands', async (req, res) => {
     ];
 
     try {
-        const existingCommandsResponse = await axios.get(`/applications/${process.env.APPLICATION_ID}/commands`);
+        const existingCommandsResponse = await axios.get(`/applications/${appId}/commands`);
         const existingCommands = existingCommandsResponse.data;
         const commandsToDelete = existingCommands.filter(command => 
             !slashCommands.some(newCommand => newCommand.name === command.name));
         for (const command of commandsToDelete) {
-            await axios.delete(`/applications/${process.env.APPLICATION_ID}/commands/${command.id}`);
+            await axios.delete(`/applications/${appId}/commands/${command.id}`);
         }
-        await axios.put(`/applications/${process.env.APPLICATION_ID}/commands`, slashCommands);
+        await axios.put(`/applications/${appId}/commands`, slashCommands);
         console.log('Global commands have been updated successfully');
     } catch (error) {
         console.error('Error updating commands:', error);
@@ -163,7 +164,7 @@ app.get('/register_commands', async (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.redirect(`https://discord.com/oauth2/authorize?client_id=${process.env.CLIENT_ID}&permissions=2048&scope=bot+applications.commands`);
+    res.redirect(`https://discord.com/oauth2/authorize?client_id=1212077510431608973&permissions=2048&scope=bot+applications.commands`);
 });
 
 const PORT = process.env.PORT || 8999;
