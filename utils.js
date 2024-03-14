@@ -84,7 +84,7 @@ async function searchOnDeezer(query) {
 }
 
 function getService(url) {
-  return URL(url).hostname.replace('www.', '').split('.')[0].toLowerCase();
+  return new URL(url).hostname.replace('www.', '').split('.')[0].toLowerCase();
 }
 
 module.exports = {
