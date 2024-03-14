@@ -88,9 +88,9 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 const service = utils.getService(url);
                 let query = '';
                 let spotifyAccessToken = await utils.getSpotifyAccessToken(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
-                const spotifyLink = '';
-                const youtubeLink = '';
-                const deezerLink = '';
+                let spotifyLink = '';
+                let youtubeLink = '';
+                let deezerLink = '';
                 console.log('X\nX\nX\nX\nAccess tokens:');
                 console.log(spotifyAccessToken);
                 if (service === 'spotify') {
@@ -104,7 +104,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 } else if (service === 'deezer') {
                     query = await utils.getTrackDetailsFromDeezer(url);
                     deezerLink = url;
-                    console.log(query );
+                    console.log(query);
                 }
                 if (spotifyLink === '') {
                     spotifyLink = await utils.searchOnSpotify(query, spotifyAccessToken);
