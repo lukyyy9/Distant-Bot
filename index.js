@@ -89,15 +89,15 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             let spotifyAccessToken = '';
             if (service === 'spotify') {
                 spotifyAccessToken = await utils.getSpotifyAccessToken();
-                query = await getTrackDetailsFromSpotify(url, spotifyAccessToken);
+                query = await utils.getTrackDetailsFromSpotify(url, spotifyAccessToken);
             } else if (service === 'youtube') {
-                query = await getTrackDetailsFromYouTube(url, youtubeApiKey);
+                query = await utils.getTrackDetailsFromYouTube(url, youtubeApiKey);
             } else if (service === 'deezer') {
-                query = await getTrackDetailsFromDeezer(url);
+                query = await utils.getTrackDetailsFromDeezer(url);
             }
-            const spotifyLink = service !== 'spotify' ? await searchOnSpotify(query, spotifyAccessToken) : url;
-            const youtubeLink = service !== 'youtube' ? await searchOnYouTube(query, youtubeApiKey) : url;
-            const deezerLink = service !== 'deezer' ? await searchOnDeezer(query) : url;
+            const spotifyLink = service !== 'spotify' ? await utils.searchOnSpotify(query, spotifyAccessToken) : url;
+            const youtubeLink = service !== 'youtube' ? await utils.searchOnYouTube(query, youtubeApiKey) : url;
+            const deezerLink = service !== 'deezer' ? await utils.searchOnDeezer(query) : url;
             console.log(`Spotify: ${spotifyLink}`);
             console.log(`YouTube: ${youtubeLink}`);
             console.log(`Deezer: ${deezerLink}`);
