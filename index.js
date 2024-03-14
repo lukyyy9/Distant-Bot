@@ -91,9 +91,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 let spotifyLink = '';
                 let youtubeLink = '';
                 let deezerLink = '';
-                console.log('X\nX\nX\nX\nAccess tokens:');
-                console.log(spotifyAccessToken);
-                if (service === 'spotify') {
+                /*if (service === 'spotify') {
                     query = await utils.getTrackDetailsFromSpotify(url, spotifyAccessToken);
                     spotifyLink = url;
                     console.log(query);
@@ -101,7 +99,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                     query = await utils.getTrackDetailsFromYouTube(url, youtubeApiKey);
                     youtubeLink = url;
                     console.log(query);
-                } else if (service === 'deezer') {
+                } else*/ if (service === 'deezer') {
                     query = await utils.getTrackDetailsFromDeezer(url);
                     deezerLink = url;
                     console.log(query);
@@ -109,12 +107,13 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 if (spotifyLink === '') {
                     spotifyLink = await utils.searchOnSpotify(query, spotifyAccessToken);
                 }
-                if (youtubeLink === '') {
+                /*if (youtubeLink === '') {
                     youtubeLink = await utils.searchOnYouTube(query, youtubeApiKey);
                 }
                 if (deezerLink === '') {
                     deezerLink = await utils.searchOnDeezer(query);
-                }
+                }*/
+                console.log(spotifyLink);/*
                 return res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                     data: {
@@ -139,7 +138,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                             }]
                         }]
                     }
-                });
+                });*/
             } catch (error) {
                 console.error(error);
                 return res.status(500).send({
