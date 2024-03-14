@@ -1,4 +1,5 @@
 require('dotenv').config();
+import * as utils from './utils.js';
 const express = require('express');
 const axios = require('axios');
 const fs = require('fs');
@@ -7,6 +8,8 @@ const { InteractionType, InteractionResponseType, verifyKeyMiddleware } = requir
 
 const app = express();
 app.use(express.json());
+
+let youtubeApiKey = process.env.YOUTUBE_API_KEY;
 
 const discordApi = axios.create({
     baseURL: 'https://discord.com/api/',
@@ -54,12 +57,12 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
         } else if (requestData.name === 'video') {
             let url = requestData.options[0].value;
             let videoType = '';
-            switch (new URL(url).hostname.replace('www.', '').split('.')[0].toLowerCase() + '.') {
+            switch (utils.getService(url) + '.') {
                 case 'instagram.': url = url.replace('instagram.', 'ddinstagram.'); videoType = 'Reel'; break;
                 case 'tiktok.': url = url.replace('tiktok.', 'vxtiktok.'); videoType = 'TikTok'; break;
                 case 'twitter.': url = url.replace('twitter.', 'fxtwitter.'); videoType = 'X'; break;
                 case 'x.': url = url.replace('x.', 'fxtwitter.'); videoType = 'X'; break;
-                default: videoType = new URL(url).hostname + ' video'; break;
+                default: videoType = 'Video'; break;
             }
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -87,11 +90,27 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                 data: { content: `Top users by upvotes:\n${userLeaderboard}` },
             });
-        } else if (requestData.name === 'spotify' || requestData.name === 'deezer' || requestData.name === 'applemusic') {
-            return res.send({
-                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                data: { content: `${member.user.username} used the ${requestData.name} command` },
-            }); // Temporary return !
+        } else if (requestData.name === 'music') {
+            const service = utils.getService(url);
+            let query = '';
+            let spotifyAccessToken = '';
+
+            if (service === 'spotify') {
+                spotifyAccessToken = await utils.getSpotifyAccessToken();
+                query = await getTrackDetailsFromSpotify(url, spotifyAccessToken);
+            } else if (service === 'youtube') {
+                query = await getTrackDetailsFromYouTube(url, youtubeApiKey);
+            } else if (service === 'deezer') {
+                query = await getTrackDetailsFromDeezer(url);
+            }
+
+            const spotifyLink = service !== 'spotify' ? await searchOnSpotify(query, spotifyAccessToken) : url;
+            const youtubeLink = service !== 'youtube' ? await searchOnYouTube(query, youtubeApiKey) : url;
+            const deezerLink = service !== 'deezer' ? await searchOnDeezer(query) : url;
+
+            console.log(`Spotify: ${spotifyLink}`);
+            console.log(`YouTube: ${youtubeLink}`);
+            console.log(`Deezer: ${deezerLink}`);
         }
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
         const [action, postId] = requestData.custom_id.split('_');
