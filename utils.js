@@ -1,13 +1,22 @@
-const axios = require('axios');
+const axios = require('axios'); // Ensure Axios is imported
 
 async function getSpotifyAccessToken(clientId, clientSecret) {
-  const response = await axios.post('https://accounts.spotify.com/api/token', 'grant_type=client_credentials', {
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
-    },
-  });
-  return response.data.access_token;
+  try {
+    const response = await axios.post(
+      'https://accounts.spotify.com/api/token',
+      'grant_type=client_credentials', // Data to be sent in the body
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+        },
+      }
+    );
+    return response.data.access_token;
+  } catch (error) {
+    console.error('Error fetching Spotify access token:', error);
+    return null; // Or throw an error, depending on your error handling strategy
+  }
 }
 
 async function getTrackDetailsFromSpotify(url, spotifyAccessToken) {
