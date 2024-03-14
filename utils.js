@@ -26,6 +26,7 @@ async function getTrackDetailsFromSpotify(url, spotifyAccessToken) {
       'Authorization': `Bearer ${spotifyAccessToken}`,
     },
   });
+  console.log(response.data);
   return `${response.data.name} ${response.data.artists.map(artist => artist.name).join(', ')}`;
 }
 

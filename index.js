@@ -87,7 +87,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 let url = requestData.options[0].value;
                 const service = utils.getService(url);
                 let query = '';
-                let spotifyAccessToken = await utils.getSpotifyAccessToken().then(console.log(spotifyAccessToken));
+                let spotifyAccessToken = await utils.getSpotifyAccessToken();
                 console.log('X\nX\nX\nX\nAccess tokens:');
                 console.log(spotifyAccessToken);
                 if (service === 'spotify') {
