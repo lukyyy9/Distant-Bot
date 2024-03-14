@@ -83,51 +83,61 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             });
 
         } else if (requestData.name === 'music') {
-            let url = requestData.options[0].value;
-            const service = utils.getService(url);
-            let query = '';
-            let spotifyAccessToken = await utils.getSpotifyAccessToken();
-            console.log('X\nX\nX\nX\nAccess tokens:');
-            console.log(spotifyAccessToken);
-            console.log(youtubeApiKey);
-            if (service === 'spotify') {
-                query = await utils.getTrackDetailsFromSpotify(url, spotifyAccessToken);
-            } else if (service === 'youtube') {
-                query = await utils.getTrackDetailsFromYouTube(url, youtubeApiKey);
-            } else if (service === 'deezer') {
-                query = await utils.getTrackDetailsFromDeezer(url);
-            }
-            const spotifyLink = service !== 'spotify' ? await utils.searchOnSpotify(query, spotifyAccessToken) : url;
-            const youtubeLink = service !== 'youtube' ? await utils.searchOnYouTube(query, youtubeApiKey) : url;
-            const deezerLink = service !== 'deezer' ? await utils.searchOnDeezer(query) : url;
-            console.log(`Spotify: ${spotifyLink}`);
-            console.log(`YouTube: ${youtubeLink}`);
-            console.log(`Deezer: ${deezerLink}`);
-            return res.send({
-                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                data: {
-                    content: `Music shared by <@${member.user.id}>:`,
-                    components: [{
-                        type: 1,
-                        components: [{
-                            type: 2,
-                            style: 5,
-                            label: 'Spotify',
-                            url: spotifyLink,
-                        }, {
-                            type: 2,
-                            style: 5,
-                            label: 'YouTube',
-                            url: youtubeLink,
-                        }, {
-                            type: 2,
-                            style: 5,
-                            label: 'Deezer',
-                            url: deezerLink,
-                        }]
-                    }]
+            try {
+                let url = requestData.options[0].value;
+                const service = utils.getService(url);
+                let query = '';
+                let spotifyAccessToken = await utils.getSpotifyAccessToken();
+                console.log('X\nX\nX\nX\nAccess tokens:');
+                console.log(spotifyAccessToken);
+                console.log(youtubeApiKey);
+                if (service === 'spotify') {
+                    query = await utils.getTrackDetailsFromSpotify(url, spotifyAccessToken);
+                } else if (service === 'youtube') {
+                    query = await utils.getTrackDetailsFromYouTube(url, youtubeApiKey);
+                } else if (service === 'deezer') {
+                    query = await utils.getTrackDetailsFromDeezer(url);
                 }
-            });
+                const spotifyLink = service !== 'spotify' ? await utils.searchOnSpotify(query, spotifyAccessToken) : url;
+                const youtubeLink = service !== 'youtube' ? await utils.searchOnYouTube(query, youtubeApiKey) : url;
+                const deezerLink = service !== 'deezer' ? await utils.searchOnDeezer(query) : url;
+                console.log(`Spotify: ${spotifyLink}`);
+                console.log(`YouTube: ${youtubeLink}`);
+                console.log(`Deezer: ${deezerLink}`);
+                return res.send({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: {
+                        content: `Music shared by <@${member.user.id}>:`,
+                        components: [{
+                            type: 1,
+                            components: [{
+                                type: 2,
+                                style: 5,
+                                label: 'Spotify',
+                                url: spotifyLink,
+                            }, {
+                                type: 2,
+                                style: 5,
+                                label: 'YouTube',
+                                url: youtubeLink,
+                            }, {
+                                type: 2,
+                                style: 5,
+                                label: 'Deezer',
+                                url: deezerLink,
+                            }]
+                        }]
+                    }
+                });
+            } catch (error) {
+                console.error(error);
+                return res.status(500).send({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: {
+                        content: `An error occurred while processing the request.`,
+                    }
+                });
+            }
         }
         
         else if (requestData.name === 'topuser') {
