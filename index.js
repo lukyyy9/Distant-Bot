@@ -91,6 +91,8 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 console.log('X\nX\nX\nX\nAccess tokens:');
                 console.log(spotifyAccessToken);
                 console.log(youtubeApiKey);
+                console.log(service);
+                /*
                 if (service === 'spotify') {
                     query = await utils.getTrackDetailsFromSpotify(url, spotifyAccessToken);
                 } else if (service === 'youtube') {
@@ -128,7 +130,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                             }]
                         }]
                     }
-                });
+                });*/
             } catch (error) {
                 console.error(error);
                 return res.status(500).send({
