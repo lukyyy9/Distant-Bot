@@ -93,5 +93,7 @@ module.exports = {
   getTrackDetailsFromYouTube,
   getTrackDetailsFromDeezer,
   searchOnSpotify,
+  searchOnDeezer,
+  searchOnYouTube,
   getService,
 };
