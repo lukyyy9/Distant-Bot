@@ -86,9 +86,8 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             let url = requestData.options[0].value;
             const service = utils.getService(url);
             let query = '';
-            let spotifyAccessToken = '';
+            let spotifyAccessToken = await utils.getSpotifyAccessToken();
             if (service === 'spotify') {
-                spotifyAccessToken = await utils.getSpotifyAccessToken();
                 query = await utils.getTrackDetailsFromSpotify(url, spotifyAccessToken);
             } else if (service === 'youtube') {
                 query = await utils.getTrackDetailsFromYouTube(url, youtubeApiKey);
