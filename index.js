@@ -195,7 +195,12 @@ app.get('/register_commands', async (req, res) => {
         {
             name: "music",
             description: "Sends the music link from all music streaming services",
-            options: [],
+            options: [{
+                name: "url",
+                description: "Music streaming service title link",
+                type: 3,
+                required: true,
+            }],
         },
         {
             name: "topuser",
