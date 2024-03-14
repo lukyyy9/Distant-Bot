@@ -43,10 +43,26 @@ async function getTrackDetailsFromYouTube(url, youtubeApiKey) {
 }
 
 async function getTrackDetailsFromDeezer(url) {
-    const trackId = url.split('link/')[1].split('?')[0];
-    console.log('TRACKID DEEZER='+trackId);
-    const response = await axios.get(`https://api.deezer.com/track/${trackId}`);
-    return response.data;
+  let trackId = '';
+  if (url.includes('deezer.page.link')) {
+      // Case 1: URL is a short link
+      const fullUrl = await axios.get(url);
+      console.log('FULL URL DEEZER=' + fullUrl.data);
+      const regex = /https:\/\/www\.deezer\.com\/\w+\/track\/(\d+)/;
+      const match = fullUrl.data.match(regex);
+      if (match) {
+          trackId = match[1];
+      } else {
+          console.log('No track ID found in the HTML content');
+          return;
+      }
+  } else {
+      // Case 2: URL is a full link
+      trackId = url.split('track/')[1];
+  }
+  console.log('TRACKID DEEZER=' + trackId);
+  const response = await axios.get(`https://api.deezer.com/track/${trackId}`);
+  return response.data;
 }
 
 async function searchOnSpotify(query, spotifyAccessToken) {
