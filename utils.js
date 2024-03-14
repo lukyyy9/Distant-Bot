@@ -12,6 +12,7 @@ async function getSpotifyAccessToken(clientId, clientSecret) {
         },
       }
     );
+    console.log(response.data);
     return response.data.access_token;
   } catch (error) {
     console.error('Error fetching Spotify access token:', error);
@@ -26,7 +27,6 @@ async function getTrackDetailsFromSpotify(url, spotifyAccessToken) {
       'Authorization': `Bearer ${spotifyAccessToken}`,
     },
   });
-  console.log(response.data);
   return `${response.data.name} ${response.data.artists.map(artist => artist.name).join(', ')}`;
 }
 
