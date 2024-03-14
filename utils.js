@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-export async function getSpotifyAccessToken(clientId, clientSecret) {
+async function getSpotifyAccessToken(clientId, clientSecret) {
   const response = await axios.post('https://accounts.spotify.com/api/token', 'grant_type=client_credentials', {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -10,7 +10,7 @@ export async function getSpotifyAccessToken(clientId, clientSecret) {
   return response.data.access_token;
 }
 
-export async function getTrackDetailsFromSpotify(url, spotifyAccessToken) {
+async function getTrackDetailsFromSpotify(url, spotifyAccessToken) {
   const trackId = url.split('track/')[1].split('?')[0];
   const response = await axios.get(`https://api.spotify.com/v1/tracks/${trackId}`, {
     headers: {
@@ -20,7 +20,7 @@ export async function getTrackDetailsFromSpotify(url, spotifyAccessToken) {
   return `${response.data.name} ${response.data.artists.map(artist => artist.name).join(', ')}`;
 }
 
-export async function getTrackDetailsFromYouTube(url, youtubeApiKey) {
+async function getTrackDetailsFromYouTube(url, youtubeApiKey) {
   const videoId = url.split('watch?v=')[1].split('&')[0];
   const response = await axios.get(`https://www.googleapis.com/youtube/v3/videos`, {
     params: {
@@ -32,13 +32,13 @@ export async function getTrackDetailsFromYouTube(url, youtubeApiKey) {
   return response.data.items[0].snippet.title;
 }
 
-export async function getTrackDetailsFromDeezer(url) {
+async function getTrackDetailsFromDeezer(url) {
     const trackId = url.split('track/')[1];
     const response = await axios.get(`https://api.deezer.com/track/${trackId}`);
     return response.data;
 }
 
-export async function searchOnSpotify(query, spotifyAccessToken) {
+async function searchOnSpotify(query, spotifyAccessToken) {
   const response = await axios.get('https://api.spotify.com/v1/search', {
     headers: {
       'Authorization': `Bearer ${spotifyAccessToken}`,
@@ -55,7 +55,7 @@ export async function searchOnSpotify(query, spotifyAccessToken) {
   return '';
 }
 
-export async function searchOnYouTube(query, youtubeApiKey) {
+async function searchOnYouTube(query, youtubeApiKey) {
   const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
     params: {
       part: 'snippet',
@@ -71,7 +71,7 @@ export async function searchOnYouTube(query, youtubeApiKey) {
   return '';
 }
 
-export async function searchOnDeezer(query) {
+async function searchOnDeezer(query) {
   const response = await axios.get('https://api.deezer.com/search', {
     params: {
       q: query,
@@ -83,6 +83,15 @@ export async function searchOnDeezer(query) {
   return '';
 }
 
-export function getService(url) {
+function getService(url) {
   return URL(url).hostname.replace('www.', '').split('.')[0].toLowerCase();
 }
+
+module.exports = {
+  getSpotifyAccessToken,
+  getTrackDetailsFromSpotify,
+  getTrackDetailsFromYouTube,
+  getTrackDetailsFromDeezer,
+  searchOnSpotify,
+  getService,
+};
