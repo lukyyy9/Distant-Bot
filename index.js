@@ -96,7 +96,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                     query = await utils.getTrackDetailsFromYouTube(url, youtubeApiKey);
                 } else if (service === 'deezer') {
                     query = await utils.getTrackDetailsFromDeezer(url);
-                }/*
+                }
                 const spotifyLink = service !== 'spotify' ? await utils.searchOnSpotify(query, spotifyAccessToken) : url;
                 const youtubeLink = service !== 'youtube' ? await utils.searchOnYouTube(query, youtubeApiKey) : url;
                 const deezerLink = service !== 'deezer' ? await utils.searchOnDeezer(query) : url;
@@ -127,7 +127,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                             }]
                         }]
                     }
-                });*/
+                });
             } catch (error) {
                 console.error(error);
                 return res.status(500).send({
