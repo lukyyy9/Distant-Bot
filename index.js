@@ -88,21 +88,33 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 const service = utils.getService(url);
                 let query = '';
                 let spotifyAccessToken = await utils.getSpotifyAccessToken(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
+                const spotifyLink = '';
+                const youtubeLink = '';
+                const deezerLink = '';
                 console.log('X\nX\nX\nX\nAccess tokens:');
                 console.log(spotifyAccessToken);
                 if (service === 'spotify') {
                     query = await utils.getTrackDetailsFromSpotify(url, spotifyAccessToken);
+                    spotifyLink = url;
+                    console.log(query);
                 } else if (service === 'youtube') {
                     query = await utils.getTrackDetailsFromYouTube(url, youtubeApiKey);
+                    youtubeLink = url;
+                    console.log(query);
                 } else if (service === 'deezer') {
                     query = await utils.getTrackDetailsFromDeezer(url);
+                    deezerLink = url;
+                    console.log(query);
                 }
-                const spotifyLink = service !== 'spotify' ? await utils.searchOnSpotify(query, spotifyAccessToken) : url;
-                const youtubeLink = service !== 'youtube' ? await utils.searchOnYouTube(query, youtubeApiKey) : url;
-                const deezerLink = service !== 'deezer' ? await utils.searchOnDeezer(query) : url;
-                console.log(`Spotify: ${spotifyLink}`);
-                console.log(`YouTube: ${youtubeLink}`);
-                console.log(`Deezer: ${deezerLink}`);
+                if (spotifyLink === '') {
+                    spotifyLink = await utils.searchOnSpotify(query, spotifyAccessToken);
+                }
+                if (youtubeLink === '') {
+                    youtubeLink = await utils.searchOnYouTube(query, youtubeApiKey);
+                }
+                if (deezerLink === '') {
+                    deezerLink = await utils.searchOnDeezer(query);
+                }
                 return res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                     data: {
