@@ -46,6 +46,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
     const { type, data: requestData, member } = req.body;
 
     if (type === InteractionType.APPLICATION_COMMAND) {
+
         if (requestData.name === 'ping') {
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -54,6 +55,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                     flags: 64
                 },
             });
+
         } else if (requestData.name === 'video') {
             let url = requestData.options[0].value;
             let videoType = '';
@@ -79,7 +81,54 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                     }]
                 }
             });
-        } else if (requestData.name === 'topuser') {
+
+        } else if (requestData.name === 'music') {
+            let url = requestData.options[0].value;
+            const service = utils.getService(url);
+            let query = '';
+            let spotifyAccessToken = '';
+            if (service === 'spotify') {
+                spotifyAccessToken = await utils.getSpotifyAccessToken();
+                query = await getTrackDetailsFromSpotify(url, spotifyAccessToken);
+            } else if (service === 'youtube') {
+                query = await getTrackDetailsFromYouTube(url, youtubeApiKey);
+            } else if (service === 'deezer') {
+                query = await getTrackDetailsFromDeezer(url);
+            }
+            const spotifyLink = service !== 'spotify' ? await searchOnSpotify(query, spotifyAccessToken) : url;
+            const youtubeLink = service !== 'youtube' ? await searchOnYouTube(query, youtubeApiKey) : url;
+            const deezerLink = service !== 'deezer' ? await searchOnDeezer(query) : url;
+            console.log(`Spotify: ${spotifyLink}`);
+            console.log(`YouTube: ${youtubeLink}`);
+            console.log(`Deezer: ${deezerLink}`);
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: `Music shared by <@${member.user.id}>:`,
+                    components: [{
+                        type: 1,
+                        components: [{
+                            type: 2,
+                            style: 5,
+                            label: 'Spotify',
+                            url: spotifyLink,
+                        }, {
+                            type: 2,
+                            style: 5,
+                            label: 'YouTube',
+                            url: youtubeLink,
+                        }, {
+                            type: 2,
+                            style: 5,
+                            label: 'Deezer',
+                            url: deezerLink,
+                        }]
+                    }]
+                }
+            });
+        }
+        
+        else if (requestData.name === 'topuser') {
             const userLeaderboard = Object.entries(data.users)
                 .sort(([, a], [, b]) => b.totalUpvotesGiven - a.totalUpvotesGiven)
                 .slice(0, 10)
@@ -90,30 +139,11 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                 data: { content: `Top users by upvotes:\n${userLeaderboard}` },
             });
-        } else if (requestData.name === 'music') {
-            const service = utils.getService(url);
-            let query = '';
-            let spotifyAccessToken = '';
+        } 
 
-            if (service === 'spotify') {
-                spotifyAccessToken = await utils.getSpotifyAccessToken();
-                query = await getTrackDetailsFromSpotify(url, spotifyAccessToken);
-            } else if (service === 'youtube') {
-                query = await getTrackDetailsFromYouTube(url, youtubeApiKey);
-            } else if (service === 'deezer') {
-                query = await getTrackDetailsFromDeezer(url);
-            }
-
-            const spotifyLink = service !== 'spotify' ? await searchOnSpotify(query, spotifyAccessToken) : url;
-            const youtubeLink = service !== 'youtube' ? await searchOnYouTube(query, youtubeApiKey) : url;
-            const deezerLink = service !== 'deezer' ? await searchOnDeezer(query) : url;
-
-            console.log(`Spotify: ${spotifyLink}`);
-            console.log(`YouTube: ${youtubeLink}`);
-            console.log(`Deezer: ${deezerLink}`);
-        }
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
         const [action, postId] = requestData.custom_id.split('_');
+
         if (action === 'upvote') {
             const post = data.posts[postId] || { upvotes: 0, users: [] };
             if (!post.users.includes(member.user.id)) {
