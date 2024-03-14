@@ -46,10 +46,9 @@ async function getTrackDetailsFromDeezer(url) {
   let trackId = '';
   if (url.includes('deezer.page.link')) {
       // Case 1: URL is a short link
-      const fullUrl = await axios.get(url);
-      console.log('FULL URL DEEZER=' + fullUrl.data);
-      const regex = /https:\/\/www\.deezer\.com\/\w+\/track\/(\d+)/;
-      const match = fullUrl.data.match(regex);
+      const fullPage = await axios.get(url);
+      const urlExtractRegex = /https:\/\/www\.deezer\.com\/\w+\/track\/(\d+)/;
+      const match = fullPage.data.match(urlExtractRegex);
       if (match) {
           trackId = match[1];
       } else {
@@ -62,16 +61,21 @@ async function getTrackDetailsFromDeezer(url) {
   }
   console.log('TRACKID DEEZER=' + trackId);
   const response = await axios.get(`https://api.deezer.com/track/${trackId}`);
-  return response.data;
+  const trackDetails = {
+    artist: response.data.artist.name,
+    title: response.data.title,
+    album: response.data.album.title
+  };
+  return trackDetails;
 }
 
-async function searchOnSpotify(query, spotifyAccessToken) {
+async function searchOnSpotify(trackDetails, spotifyAccessToken) {
   const response = await axios.get('https://api.spotify.com/v1/search', {
     headers: {
       'Authorization': `Bearer ${spotifyAccessToken}`,
     },
     params: {
-      q: query,
+      q: trackDetails,
       type: 'track',
       limit: 1,
     },
@@ -82,11 +86,11 @@ async function searchOnSpotify(query, spotifyAccessToken) {
   return '';
 }
 
-async function searchOnYouTube(query, youtubeApiKey) {
+async function searchOnYouTube(trackDetails, youtubeApiKey) {
   const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
     params: {
       part: 'snippet',
-      q: query,
+      q: trackDetails,
       type: 'video',
       maxResults: 1,
       key: youtubeApiKey,
@@ -98,10 +102,10 @@ async function searchOnYouTube(query, youtubeApiKey) {
   return '';
 }
 
-async function searchOnDeezer(query) {
+async function searchOnDeezer(trackDetails) {
   const response = await axios.get('https://api.deezer.com/search', {
     params: {
-      q: query,
+      q: trackDetails,
     },
   });
   if (response.data.data.length > 0) {
