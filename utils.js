@@ -43,7 +43,7 @@ async function getTrackDetailsFromYouTube(url, youtubeApiKey) {
 }
 
 async function getTrackDetailsFromDeezer(url) {
-    const trackId = url.split('track/')[1];
+    const trackId = url.split('link/')[1].split('?')[0];
     console.log('TRACKID DEEZER='+trackId);
     const response = await axios.get(`https://api.deezer.com/track/${trackId}`);
     return response.data;
