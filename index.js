@@ -83,71 +83,61 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             });
 
         } else if (requestData.name === 'music') {
-            try {
-                let url = requestData.options[0].value;
-                const service = utils.getService(url);
-                let trackDetails;
-                let spotifyAccessToken = await utils.getSpotifyAccessToken(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
-                let spotifyLink = '';
-                let youtubeLink = '';
-                let deezerLink = '';
-                /*if (service === 'spotify') {
-                    query = await utils.getTrackDetailsFromSpotify(url, spotifyAccessToken);
-                    spotifyLink = url;
-                    console.log(query);
-                } else if (service === 'youtube') {
-                    query = await utils.getTrackDetailsFromYouTube(url, youtubeApiKey);
-                    youtubeLink = url;
-                    console.log(query);
-                } else*/ if (service === 'deezer') {
-                    trackDetails = await utils.getTrackDetailsFromDeezer(url);
-                    deezerLink = url;
-                    console.log(trackDetails);
-                }
-                if (spotifyLink === '') {
-                    spotifyLink = await utils.searchOnSpotify(trackDetails, spotifyAccessToken);
-                }
-                /*if (youtubeLink === '') {
-                    youtubeLink = await utils.searchOnYouTube(trackDetails, youtubeApiKey);
-                }
-                if (deezerLink === '') {
-                    deezerLink = await utils.searchOnDeezer(trackDetails);
-                }*/
-                console.log(spotifyLink);
-                return res.send({
-                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: {
-                        content: `Music shared by <@${member.user.id}>:`,
-                        components: [{
-                            type: 1,
-                            components: [{
-                                type: 2,
-                                style: 5,
-                                label: 'Spotify',
-                                url: spotifyLink,
-                            }, {
-                                type: 2,
-                                style: 5,
-                                label: 'YouTube',
-                                url: youtubeLink,
-                            }, {
-                                type: 2,
-                                style: 5,
-                                label: 'Deezer',
-                                url: deezerLink,
-                            }]
-                        }]
-                    }
-                });
-            } catch (error) {
-                console.error(error);
-                return res.status(500).send({
-                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: {
-                        content: `An error occurred while processing the request.`,
-                    }
-                });
+            let url = requestData.options[0].value;
+            const service = utils.getService(url);
+            let trackDetails;
+            let spotifyAccessToken = await utils.getSpotifyAccessToken(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
+            let spotifyLink = '';
+            let youtubeLink = '';
+            let deezerLink = '';
+            /*if (service === 'spotify') {
+                query = await utils.getTrackDetailsFromSpotify(url, spotifyAccessToken);
+                spotifyLink = url;
+                console.log(query);
+            } else if (service === 'youtube') {
+                query = await utils.getTrackDetailsFromYouTube(url, youtubeApiKey);
+                youtubeLink = url;
+                console.log(query);
+            } else*/ if (service === 'deezer') {
+                trackDetails = await utils.getTrackDetailsFromDeezer(url);
+                deezerLink = url;
+                console.log(trackDetails);
             }
+            if (spotifyLink === '') {
+                spotifyLink = await utils.searchOnSpotify(trackDetails, spotifyAccessToken);
+            }
+            /*if (youtubeLink === '') {
+                youtubeLink = await utils.searchOnYouTube(trackDetails, youtubeApiKey);
+            }
+            if (deezerLink === '') {
+                deezerLink = await utils.searchOnDeezer(trackDetails);
+            }*/
+            console.log(spotifyLink);
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: `Music shared by <@${member.user.id}>:`,
+                    components: [{
+                        type: 1,
+                        components: [{
+                            type: 2,
+                            style: 5,
+                            label: 'Spotify',
+                            url: spotifyLink,
+                        }, {
+                            type: 2,
+                            style: 5,
+                            label: 'YouTube',
+                            url: youtubeLink,
+                        }, {
+                            type: 2,
+                            style: 5,
+                            label: 'Deezer',
+                            url: deezerLink,
+                        }]
+                    }]
+                }
+            });
         }
         
         else if (requestData.name === 'topuser') {
