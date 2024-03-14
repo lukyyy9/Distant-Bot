@@ -124,12 +124,12 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                             style: 5,
                             label: 'Spotify',
                             url: spotifyLink,
-                        }, {
+                        }, /*{
                             type: 2,
                             style: 5,
                             label: 'YouTube',
                             url: youtubeLink,
-                        }, {
+                        },*/ {
                             type: 2,
                             style: 5,
                             label: 'Deezer',
