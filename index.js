@@ -104,7 +104,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 } else if (service === 'deezer') {
                     query = await utils.getTrackDetailsFromDeezer(url);
                     deezerLink = url;
-                    console.log(query);
+                    console.log(query );
                 }
                 if (spotifyLink === '') {
                     spotifyLink = await utils.searchOnSpotify(query, spotifyAccessToken);
