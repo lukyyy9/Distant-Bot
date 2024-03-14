@@ -113,7 +113,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 if (deezerLink === '') {
                     deezerLink = await utils.searchOnDeezer(trackDetails);
                 }*/
-                console.log(spotifyLink);/*
+                console.log(spotifyLink);
                 return res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                     data: {
@@ -138,7 +138,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                             }]
                         }]
                     }
-                });*/
+                });
             } catch (error) {
                 console.error(error);
                 return res.status(500).send({
