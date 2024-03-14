@@ -87,12 +87,9 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 let url = requestData.options[0].value;
                 const service = utils.getService(url);
                 let query = '';
-                let spotifyAccessToken = await utils.getSpotifyAccessToken();
+                let spotifyAccessToken = await utils.getSpotifyAccessToken().then(console.log(spotifyAccessToken));
                 console.log('X\nX\nX\nX\nAccess tokens:');
                 console.log(spotifyAccessToken);
-                console.log(youtubeApiKey);
-                console.log(service);
-                /*
                 if (service === 'spotify') {
                     query = await utils.getTrackDetailsFromSpotify(url, spotifyAccessToken);
                 } else if (service === 'youtube') {
@@ -130,7 +127,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                             }]
                         }]
                     }
-                });*/
+                });
             } catch (error) {
                 console.error(error);
                 return res.status(500).send({
