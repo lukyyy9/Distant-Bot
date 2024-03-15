@@ -5,7 +5,6 @@ const utils = require('./utils.js');
 const fs = require('fs');
 const path = require('path');
 const { InteractionType, InteractionResponseType, verifyKeyMiddleware } = require('discord-interactions');
-const e = require('express');
 
 const app = express();
 app.use(express.json());
@@ -134,6 +133,14 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                     url: spotifyLink,
                 });
             }
+            if (youtubeLink) {
+                components.push({
+                    type: 2,
+                    style: 5,
+                    label: 'YouTube',
+                    url: youtubeLink,
+                });
+            }
             if (deezerLink) {
                 components.push({
                     type: 2,
@@ -142,20 +149,10 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                     url: deezerLink,
                 });
             }
-            if (youtubeLink) {
-                components.push({
-                    type: 2,
-                    style: 5,
-                    label: 'YouTube',
-                    url: youtubeLink,
-                });
-                content.push(`[Music](${youtubeLink}) shared by <@${member.user.id}>:`);
-            }
-            else content.push(`Music shared by <@${member.user.id}>:`);
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                 data: {
-                    content: content,
+                    content: `[Music](${youtubeLink}) shared by <@${member.user.id}>:`,
                     components: [{
                         type: 1,
                         components: components
