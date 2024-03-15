@@ -117,15 +117,11 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                     }
                 });
             }
-            if (spotifyLink === '') {
-                spotifyLink = await utils.searchOnSpotify(trackDetails, spotifyAccessToken);
-            }
-            if (youtubeLink === '') {
-                youtubeLink = await utils.searchOnYouTube(trackDetails, youtubeApiKey);
-            }
-            if (deezerLink === '') {
-                deezerLink = await utils.searchOnDeezer(trackDetails);
-            }
+            [spotifyLink, youtubeLink, deezerLink] = await Promise.all([
+                spotifyLink === '' ? utils.searchOnSpotify(trackDetails, spotifyAccessToken) : Promise.resolve(spotifyLink),
+                youtubeLink === '' ? utils.searchOnYouTube(trackDetails, youtubeApiKey) : Promise.resolve(youtubeLink),
+                deezerLink === '' ? utils.searchOnDeezer(trackDetails) : Promise.resolve(deezerLink)
+            ]);
             if (spotifyLink) {
                 components.push({
                     type: 2,
