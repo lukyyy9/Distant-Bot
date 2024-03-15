@@ -89,15 +89,16 @@ async function searchOnSpotify(trackDetails, spotifyAccessToken) {
 }
 
 async function searchOnYouTube(trackDetails, youtubeApiKey) {
+  //const url = `https://www.googleapis.com/youtube/v3/search?key=${YOUTUBE_API_KEY}&type=video&part=snippet&q=${query}`;
   const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
     params: {
-      part: 'snippet',
-      q: trackDetails,
-      type: 'video',
-      maxResults: 1,
       key: youtubeApiKey,
+      type: 'video',
+      part: 'snippet',
+      q: `${trackDetails.artist} ${trackDetails.title}`,
     },
   });
+  console.log(response.data);
   if (response.data.items.length > 0) {
     return `https://www.youtube.com/watch?v=${response.data.items[0].id.videoId}`;
   }
