@@ -141,7 +141,7 @@ async function getRidOfVmTiktok(url) {
     const videoIdMatch = data.match(videoIdRegex);
     const videoId = videoIdMatch ? videoIdMatch[1] : null;
 
-    return `https://www.tiktok.com/${username}/video/${videoId}`;
+    return `https://www.tiktok.com/@${username}/video/${videoId}`;
 }
 
 module.exports = {
