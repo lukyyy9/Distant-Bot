@@ -91,11 +91,11 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             let youtubeLink = '';
             let deezerLink = '';
             if (service === 'spotify') {
-                query = await utils.getTrackDetailsFromSpotify(url, spotifyAccessToken);
+                trackDetails = await utils.getTrackDetailsFromSpotify(url, spotifyAccessToken);
                 spotifyLink = url;
                 console.log(query);
             } /*else if (service === 'youtube') {
-                query = await utils.getTrackDetailsFromYouTube(url, youtubeApiKey);
+                trackDetails = await utils.getTrackDetailsFromYouTube(url, youtubeApiKey);
                 youtubeLink = url;
                 console.log(query);
             } */else if (service === 'deezer') {
