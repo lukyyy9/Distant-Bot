@@ -96,6 +96,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             let spotifyLink = '';
             let youtubeLink = '';
             let deezerLink = '';
+            let musicWord = 'Music';
             let components = [];
             if (service === 'spotify') {
                 trackDetails = await utils.getTrackDetailsFromSpotify(url, spotifyAccessToken);
@@ -140,6 +141,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                     label: 'YouTube',
                     url: youtubeLink,
                 });
+                musicWord = `[Music](${youtubeLink})`;
             }
             if (deezerLink) {
                 components.push({
@@ -152,7 +154,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                 data: {
-                    content: `[Music](${youtubeLink}) shared by <@${member.user.id}>:`,
+                    content: `${musicWord} shared by <@${member.user.id}>:\n${trackDetails.title} by ${trackDetails.artist}`,
                     components: [{
                         type: 1,
                         components: components
