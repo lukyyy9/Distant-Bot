@@ -141,6 +141,16 @@ async function getRidOfVmTiktok(url) {
     const videoIdMatch = data.match(videoIdRegex);
     const videoId = videoIdMatch ? videoIdMatch[1] : null;
 
+    //integral log
+    console.log("LALALALALALALA");
+    console.log("LALALALALALALA");
+    console.log("LALALALALALALA");
+    console.log("LALALALALALALA");
+    console.log("LALALALALALALA");
+    console.log("LALALALALALALA");
+    console.log("LALALALALALALA");
+    console.log(username, videoId);
+    console.log(`https://www.tiktok.com/${username}/${videoId}`);
     return `https://www.tiktok.com/${username}/${videoId}`;
 }
 
