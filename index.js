@@ -117,10 +117,10 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             }
             /*if (youtubeLink === '') {
                 youtubeLink = await utils.searchOnYouTube(trackDetails, youtubeApiKey);
-            }
+            }*/
             if (deezerLink === '') {
                 deezerLink = await utils.searchOnDeezer(trackDetails);
-            }*/
+            }
             console.log(spotifyLink);
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
