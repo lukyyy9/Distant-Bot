@@ -107,10 +107,10 @@ async function searchOnDeezer(trackDetails) {
     params: {
       q: trackDetails,
     },
-  });
+  });/*
   if (response.data.data.length > 0) {
     return `https://www.deezer.com/track/${response.data.data[0].id}`;
-  }
+  }*/console.log(response.data);
   return '';
 }
 
