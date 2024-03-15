@@ -109,15 +109,16 @@ async function searchOnYouTube(trackDetails, youtubeApiKey) {
 }
 
 async function searchOnDeezer(trackDetails) {
-  console.log('trackDetails=' + trackDetails);
+  const query = `artist:"${trackDetails.artist}" album:"${trackDetails.album}" track:"${trackDetails.title}"`;
   const response = await axios.get('https://api.deezer.com/search', {
     params: {
-      q: trackDetails,
+      q: query,
     },
-  });/*
-  if (response.data.data.length > 0) {
+  });
+  console.log(response.data);
+  if (response.data.data && response.data.data.length > 0) {
     return `https://www.deezer.com/track/${response.data.data[0].id}`;
-  }*/console.log(response.data);
+  }
   return '';
 }
 
