@@ -126,6 +126,21 @@ function getService(url) {
   return hostname;
 }
 
+async function getRidOfVmTiktok(url) {
+    const response = await axios.get(url);
+    const data = response.data;
+
+    const usernameRegex = /"uniqueId":"([^"]*)"/;
+    const usernameMatch = data.match(usernameRegex);
+    const username = usernameMatch ? usernameMatch[1] : null;
+
+    const videoIdRegex = /{"itemInfo":{"itemStruct":{"id":"([^"]*)"/;
+    const videoIdMatch = data.match(videoIdRegex);
+    const videoId = videoIdMatch ? videoIdMatch[1] : null;
+
+    return `https://www.tiktok.com/${username}/${videoId}`;
+}
+
 module.exports = {
   getSpotifyAccessToken,
   getTrackDetailsFromSpotify,
@@ -135,4 +150,5 @@ module.exports = {
   searchOnDeezer,
   searchOnYouTube,
   getService,
+  getRidOfVmTiktok,
 };

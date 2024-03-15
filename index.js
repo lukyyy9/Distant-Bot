@@ -61,7 +61,11 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             let videoType = '';
             switch (utils.getService(url) + '.') {
                 case 'instagram.': url = url.replace('instagram.', 'ddinstagram.'); videoType = 'Reel'; break;
-                case 'tiktok.': url = url.replace('tiktok.', 'vxtiktok.'); videoType = 'TikTok'; break;
+                case 'tiktok.':
+                    if(url.includes('vm.tiktok.')){
+                        url = getRidOfVmTiktok(url);
+                    }
+                    url = url.replace('tiktok.', 'vxtiktok.'); videoType = 'TikTok'; break;
                 case 'twitter.': url = url.replace('twitter.', 'fxtwitter.'); videoType = 'X'; break;
                 case 'x.': url = url.replace('x.', 'fxtwitter.'); videoType = 'X'; break;
                 default: videoType = 'Video'; break;
