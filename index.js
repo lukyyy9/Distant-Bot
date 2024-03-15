@@ -93,11 +93,11 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             if (service === 'spotify') {
                 trackDetails = await utils.getTrackDetailsFromSpotify(url, spotifyAccessToken);
                 spotifyLink = url;
-                console.log(query);
+                console.log(trackDetails);
             } /*else if (service === 'youtube') {
                 trackDetails = await utils.getTrackDetailsFromYouTube(url, youtubeApiKey);
                 youtubeLink = url;
-                console.log(query);
+                console.log(trackDetails);
             } */else if (service === 'deezer') {
                 trackDetails = await utils.getTrackDetailsFromDeezer(url);
                 deezerLink = url;
