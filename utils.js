@@ -28,7 +28,12 @@ async function getTrackDetailsFromSpotify(url, spotifyAccessToken) {
     },
   });
   console.log(response.data);
-  return `${response.data.name} ${response.data.artists.map(artist => artist.name).join(', ')}`;
+  const trackDetails = {
+    artist: response.data.artists[0].name,
+    title: response.data.name,
+    album: response.data.album.name
+  };
+  return trackDetails;
 }
 
 async function getTrackDetailsFromYouTube(url, youtubeApiKey) {
