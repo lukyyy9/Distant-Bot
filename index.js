@@ -63,7 +63,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 case 'instagram.': url = url.replace('instagram.', 'ddinstagram.'); videoType = 'Reel'; break;
                 case 'tiktok.':
                     if(url.includes('vm.tiktok')){
-                        url = utils.getRidOfVmTiktok(url);
+                        url = await utils.getRidOfVmTiktok(url);
                         console.log('log2',url);
                     }
                     else url = url.replace('tiktok.', 'vxtiktok.');
