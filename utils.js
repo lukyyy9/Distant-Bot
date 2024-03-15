@@ -126,6 +126,9 @@ function getService(url) {
   if (url.includes('tiktok') && hostname === "vm") { //to avoid getting "vm" instead of tiktok as a service
     return 'tiktok';
   }
+  if (url.includes('youtu.be') && hostname === 'youtu') { // to handle youtu.be links
+    return 'youtube';
+  }
   return hostname;
 }
 
