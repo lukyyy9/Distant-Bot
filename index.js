@@ -90,18 +90,27 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             let spotifyLink = '';
             let youtubeLink = '';
             let deezerLink = '';
-            /*if (service === 'spotify') {
+            if (service === 'spotify') {
                 query = await utils.getTrackDetailsFromSpotify(url, spotifyAccessToken);
                 spotifyLink = url;
                 console.log(query);
-            } else if (service === 'youtube') {
+            } /*else if (service === 'youtube') {
                 query = await utils.getTrackDetailsFromYouTube(url, youtubeApiKey);
                 youtubeLink = url;
                 console.log(query);
-            } else*/ if (service === 'deezer') {
+            } */else if (service === 'deezer') {
                 trackDetails = await utils.getTrackDetailsFromDeezer(url);
                 deezerLink = url;
                 console.log(trackDetails);
+            }
+            else {
+                return res.send({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: {
+                        content: `This platform is not supported yet. Please use a valid music streaming service link.`,
+                        flags: 64
+                    }
+                });
             }
             if (spotifyLink === '') {
                 spotifyLink = await utils.searchOnSpotify(trackDetails, spotifyAccessToken);
