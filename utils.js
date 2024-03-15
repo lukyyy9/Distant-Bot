@@ -123,6 +123,9 @@ function getService(url) {
   if (url.includes('spotify') && hostname === "open") { //to avoid getting "open" instead of spotify as a service
     return 'spotify';
   }
+  if (url.includes('tiktok') && hostname === "vm") { //to avoid getting "open" instead of spotify as a service
+    return 'tiktok';
+  }
   return hostname;
 }
 
