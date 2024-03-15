@@ -90,15 +90,14 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             let spotifyLink = '';
             let youtubeLink = '';
             let deezerLink = '';
+            let components = [];
             if (service === 'spotify') {
                 trackDetails = await utils.getTrackDetailsFromSpotify(url, spotifyAccessToken);
                 spotifyLink = url;
-                console.log(trackDetails);
-            } /*else if (service === 'youtube') {
+            } else if (service === 'youtube') {
                 trackDetails = await utils.getTrackDetailsFromYouTube(url, youtubeApiKey);
                 youtubeLink = url;
-                console.log(trackDetails);
-            } */else if (service === 'deezer') {
+            } else if (service === 'deezer') {
                 trackDetails = await utils.getTrackDetailsFromDeezer(url);
                 deezerLink = url;
             }
@@ -113,37 +112,44 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             }
             if (spotifyLink === '') {
                 spotifyLink = await utils.searchOnSpotify(trackDetails, spotifyAccessToken);
-                console.log(trackDetails);
             }
-            /*if (youtubeLink === '') {
+            if (youtubeLink === '') {
                 youtubeLink = await utils.searchOnYouTube(trackDetails, youtubeApiKey);
-            }*/
+            }
             if (deezerLink === '') {
                 deezerLink = await utils.searchOnDeezer(trackDetails);
             }
-            console.log(spotifyLink);
+            if (spotifyLink) {
+                components.push({
+                    type: 2,
+                    style: 5,
+                    label: 'Spotify',
+                    url: spotifyLink,
+                });
+            }
+            if (youtubeLink) {
+                components.push({
+                    type: 2,
+                    style: 5,
+                    label: 'YouTube',
+                    url: youtubeLink,
+                });
+            }
+            if (deezerLink) {
+                components.push({
+                    type: 2,
+                    style: 5,
+                    label: 'Deezer',
+                    url: deezerLink,
+                });
+            }
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                 data: {
                     content: `Music shared by <@${member.user.id}>:`,
                     components: [{
                         type: 1,
-                        components: [{
-                            type: 2,
-                            style: 5,
-                            label: 'Spotify',
-                            url: spotifyLink,
-                        }, /*{
-                            type: 2,
-                            style: 5,
-                            label: 'YouTube',
-                            url: youtubeLink,
-                        },*/ {
-                            type: 2,
-                            style: 5,
-                            label: 'Deezer',
-                            url: deezerLink,
-                        }]
+                        components: components
                     }]
                 }
             });
@@ -233,7 +239,6 @@ app.get('/register_commands', async (req, res) => {
     try {
         const response = await discordApi.get(`/applications/${process.env.APPLICATION_ID}/commands`);
         const commands = response.data;
-        console.log('Global commands:', commands);
     } catch (error) {
         console.error('Error getting global commands:', error);
     }
@@ -244,7 +249,6 @@ app.get('/register_commands', async (req, res) => {
         for (const command of commands) {
             await discordApi.delete(`/applications/${process.env.APPLICATION_ID}/commands/${command.id}`);
         }
-        console.log('Global commands have been deleted');
     } catch (error) {
         console.error('Error deleting global commands:', error);
     }
