@@ -101,7 +101,6 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             } */else if (service === 'deezer') {
                 trackDetails = await utils.getTrackDetailsFromDeezer(url);
                 deezerLink = url;
-                console.log(trackDetails);
             }
             else {
                 return res.send({
@@ -114,6 +113,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             }
             if (spotifyLink === '') {
                 spotifyLink = await utils.searchOnSpotify(trackDetails, spotifyAccessToken);
+                console.log(trackDetails);
             }
             /*if (youtubeLink === '') {
                 youtubeLink = await utils.searchOnYouTube(trackDetails, youtubeApiKey);

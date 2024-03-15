@@ -27,6 +27,7 @@ async function getTrackDetailsFromSpotify(url, spotifyAccessToken) {
       'Authorization': `Bearer ${spotifyAccessToken}`,
     },
   });
+  console.log(response.data);
   return `${response.data.name} ${response.data.artists.map(artist => artist.name).join(', ')}`;
 }
 
@@ -103,6 +104,7 @@ async function searchOnYouTube(trackDetails, youtubeApiKey) {
 }
 
 async function searchOnDeezer(trackDetails) {
+  console.log('trackDetails=' + trackDetails);
   const response = await axios.get('https://api.deezer.com/search', {
     params: {
       q: trackDetails,
