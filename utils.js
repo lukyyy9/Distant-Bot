@@ -115,7 +115,11 @@ async function searchOnDeezer(trackDetails) {
 }
 
 function getService(url) {
-  return new URL(url).hostname.replace('www.', '').split('.')[0].toLowerCase();
+  const hostname = new URL(url).hostname.replace('www.', '').split('.')[0].toLowerCase();
+  if (url.includes('spotify') && hostname === "open") { //to avoid getting "open" instead of spotify as a service
+    return 'spotify';
+  }
+  return hostname;
 }
 
 module.exports = {
