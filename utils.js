@@ -35,8 +35,8 @@ async function getTrackDetailsFromSpotify(url, spotifyAccessToken) {
 }
 
 async function getTrackDetailsFromYouTube(url, youtubeApiKey) {
-  const videoId = url.split('watch?v=')[1].split('&')[0];
-  const response = await axios.get(`https://www.googleapis.com/youtube/v3/videos`, {
+  const videoId = new URL(url).searchParams.get('v');
+  const response = await axios.get('https://www.googleapis.com/youtube/v3/videos', {
     params: {
       part: 'snippet',
       id: videoId,
@@ -46,8 +46,9 @@ async function getTrackDetailsFromYouTube(url, youtubeApiKey) {
   const trackDetails = {
     artist: response.data.items[0].snippet.channelTitle,
     title: response.data.items[0].snippet.title,
-    album: '',
+    album: ''
   };
+  return trackDetails;
 }
 
 async function getTrackDetailsFromDeezer(url) {
@@ -89,16 +90,15 @@ async function searchOnSpotify(trackDetails, spotifyAccessToken) {
 }
 
 async function searchOnYouTube(trackDetails, youtubeApiKey) {
-  //const url = `https://www.googleapis.com/youtube/v3/search?key=${YOUTUBE_API_KEY}&type=video&part=snippet&q=${query}`;
   const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
     params: {
-      key: youtubeApiKey,
-      type: 'video',
       part: 'snippet',
-      q: `${trackDetails.artist} ${trackDetails.title}`,
+      q: trackDetails,
+      type: 'video',
+      maxResults: 1,
+      key: youtubeApiKey,
     },
   });
-  console.log(response.data);
   if (response.data.items.length > 0) {
     return `https://www.youtube.com/watch?v=${response.data.items[0].id.videoId}`;
   }

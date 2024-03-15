@@ -146,7 +146,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                 data: {
-                    content: `{[Music](${youtubeLink}) shared by <@${member.user.id}>:`,
+                    content: `[Music](${youtubeLink}) shared by <@${member.user.id}>:`,
                     components: [{
                         type: 1,
                         components: components
