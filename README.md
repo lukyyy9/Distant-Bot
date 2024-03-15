@@ -3,7 +3,10 @@
 
 ## Overview
 
-The **Distant Bot** is designed to enrich user interactions within Discord servers by facilitating media sharing from popular social platforms directly into Discord channels. By supporting Instagram Reels, TikTok videos, and Twitter posts, Distant not only enhances the user experience and community engagement but also aims to combat social media addiction. This innovative approach allows users to stay within Discord, reducing the urge to switch between apps and potentially fall into the social media rabbit hole. A key feature is the ability for users to like shared videos, promoting an interactive and engaging community experience.
+The **Distant Bot** is designed to enrich user interactions within Discord servers by **facilitating media sharing from popular social platforms directly into Discord channels**.
+By supporting **Instagram Reels**, **TikTok videos**, and **Twitter posts**, Distant not only enhances the user experience and community engagement but also aims to **combat social media addiction**. This innovative approach allows users to stay within Discord, reducing the urge to switch between apps and potentially fall into the social media rabbit hole.
+A key feature is the ability for users to **like shared videos**, promoting an interactive and engaging community experience.
+Users can also **share tracks from a music streaming service**. Distant will search and send the links of all platforms for the track.
 
 ## Features
 
