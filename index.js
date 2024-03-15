@@ -65,7 +65,9 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                     if(url.includes('vm.tiktok')){
                         url = utils.getRidOfVmTiktok(url);
                     }
-                    url = url.replace('tiktok.', 'vxtiktok.'); videoType = 'TikTok'; break;
+                    url = url.replace('tiktok.', 'vxtiktok.');
+                    videoType = 'TikTok';
+                    break;
                 case 'twitter.': url = url.replace('twitter.', 'fxtwitter.'); videoType = 'X'; break;
                 case 'x.': url = url.replace('x.', 'fxtwitter.'); videoType = 'X'; break;
                 default: videoType = 'Video'; break;
