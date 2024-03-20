@@ -1,4 +1,4 @@
-![image](https://github.com/lukyyy9/Distant-Bot/assets/65600775/f4563591-4e7f-42b1-91f3-38893746b3f5)# Distant Bot for Discord
+# Distant Bot for Discord
 ![Distant Bot Logo](https://cdn.discordapp.com/attachments/696115202185232497/1218133319477231617/672fd81e-9317-47e3-b016-d318b5efa184.jpg?ex=66068e0f&is=65f4190f&hm=7bac04d92bf551a87514e6bdec1f2b8e9e9f8a8c6126581adffb304bbd2dcc0a& "Distant Bot Logo")
 
 ## Overview
