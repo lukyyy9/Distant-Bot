@@ -18,26 +18,26 @@ Users can also **share tracks from a music streaming service**. Distant will sea
 
 - Checks if the bot is responsive and operational.
 
-![Ping Command Illustration](https://cdn.discordapp.com/attachments/696115202185232497/1219978133357465620/image.png?ex=660d442d&is=65facf2d&hm=0edc4b7c644fc6bc02ae181a918565ab818d3665b4213654bb45b1e3492d262e&)
+![Ping Command Illustration](https://media.discordapp.net/attachments/696115202185232497/1219988154359222283/image.png?ex=660d4d82&is=65fad882&hm=a371b42a248240a1da007161fe29e456a5720c3123bee3a6c494b567a00dae93&=&format=webp&quality=lossless)
 
 ### `/video [url]`
 
 - Share media from Instagram, TikTok, or Twitter directly into your Discord server.
 - Users can like shared videos, adding a layer of interaction and engagement.
 
-![Video Command Illustration](https://cdn.discordapp.com/attachments/696115202185232497/1219977227966611547/image.png?ex=660d4355&is=65face55&hm=05e1fbe0b357f9f8a0b45cf7fdf95edc4b783885cbf1da5dda4c845865d70968&)
+![Video Command Illustration](https://media.discordapp.net/attachments/696115202185232497/1219988022737502248/image.png?ex=660d4d62&is=65fad862&hm=79384e0d6cc9f0092f3efd4af5485a6599b9101c758672a81dcead2905776022&=&format=webp&quality=lossless)
 
 ### `/music [url]`
 
 - Share a music track from and to all streaming services, making it easy for everyone to enjoy the same tune.
 
-![Music Command Illustration](https://cdn.discordapp.com/attachments/696115202185232497/1219976987490123776/image.png?ex=660d431b&is=65face1b&hm=61acb118e0b75aa6eceadbacbcdf8cef796aac9bf4924b8ff8f6b7abaedba9db&)
+![Music Command Illustration](https://media.discordapp.net/attachments/696115202185232497/1219987885797802004/image.png?ex=660d4d42&is=65fad842&hm=c1c229c5ea85910635d650308dc61b9fc7bf2cae2090f4b844680d87df1272eb&=&format=webp&quality=lossless)
 
 ### `/topuser`
 
 - Displays the user who has received the most likes for the videos they've shared, highlighting the most influential content sharers within the community.
 
-![Topuser Command Illustration](https://cdn.discordapp.com/attachments/696115202185232497/1219978272092192858/image.png?ex=660d444e&is=65facf4e&hm=35e524e71c6f653c1e78e89972e7c24577a6460c96b8c475aeaab0ceb36ee7f2&)
+![Topuser Command Illustration](https://media.discordapp.net/attachments/696115202185232497/1219988035119218749/image.png?ex=660d4d65&is=65fad865&hm=dd368a0189dd16c10057a3c533a49f5ac228401a4c8b96e356cb3c88f984d5a0&=&format=webp&quality=lossless)
 
 ## Open Source
 
