@@ -93,10 +93,10 @@ async function searchOnYouTube(trackDetails, youtubeApiKey) {
   const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
     params: {
       part: 'snippet',
-      q: trackDetails,
+      q: `${trackDetails.artist} - ${trackDetails.title}`,
+      key: youtubeApiKey,
       type: 'video',
       maxResults: 1,
-      key: youtubeApiKey,
     },
   });
   if (response.data.items.length > 0) {
