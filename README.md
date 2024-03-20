@@ -11,7 +11,7 @@ Users can also **share tracks from a music streaming service**. Distant will sea
 ## Features
 
 ### `/ping`
-- Checks if the bot is responsive and operational.
+- Checks if the bot is responsive and operational.\n
 ![Ping Command Illustration](https://cdn.discordapp.com/attachments/696115202185232497/1219978133357465620/image.png?ex=660d442d&is=65facf2d&hm=0edc4b7c644fc6bc02ae181a918565ab818d3665b4213654bb45b1e3492d262e&)
 
 ### `/video [url]`
