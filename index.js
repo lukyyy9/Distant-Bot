@@ -9,6 +9,21 @@ const { InteractionType, InteractionResponseType, verifyKeyMiddleware } = requir
 const app = express();
 app.use(express.json());
 
+// Initialize daily usage counter
+let dailyUsageCounter = {};
+
+// Function to reset daily usage counter at midnight
+const resetDailyUsageCounter = () => {
+    dailyUsageCounter = {};
+    // Schedule the reset for the next midnight
+    const now = new Date();
+    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+    const delay = nextMidnight - now;
+    setTimeout(resetDailyUsageCounter, delay);
+};
+// Schedule the initial reset
+resetDailyUsageCounter();
+
 let youtubeApiKey = process.env.YOUTUBE_API_KEY;
 
 const discordApi = axios.create({
@@ -45,9 +60,15 @@ let data = loadData();
 app.post('/interactions', verifyMiddleware, async (req, res) => {
     const { type, data: requestData, member } = req.body;
 
-    if (type === InteractionType.APPLICATION_COMMAND) {
+    // Increment daily usage counter for the user
+    if (member && member.user && member.user.id) {
+        dailyUsageCounter[member.user.id] = (dailyUsageCounter[member.user.id] || 0) + 1;
+    }
 
+    if (type === InteractionType.APPLICATION_COMMAND) {
+        // Handle application commands
         if (requestData.name === 'ping') {
+            // Handle ping command
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                 data: {
@@ -55,8 +76,8 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                     flags: 64
                 },
             });
-
         } else if (requestData.name === 'video') {
+            // Handle video command
             let url = requestData.options[0].value;
             let videoType = '';
             switch (utils.getService(url) + '.') {
@@ -87,8 +108,8 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                     }]
                 }
             });
-
         } else if (requestData.name === 'music') {
+            // Handle music command
             let url = requestData.options[0].value;
             const service = utils.getService(url);
             let trackDetails;
@@ -157,9 +178,8 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                     }]
                 }
             });
-        }
-        
-        else if (requestData.name === 'topuser') {
+        } else if (requestData.name === 'topuser') {
+            // Handle topuser command
             const userLeaderboard = Object.entries(data.users)
                 .sort(([, a], [, b]) => b.totalUpvotesGiven - a.totalUpvotesGiven)
                 .slice(0, 10)
@@ -168,31 +188,33 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                data: { content: `Top users by upvotes:\n${userLeaderboard}` },
-            });
-        } 
-
-    } else if (type === InteractionType.MESSAGE_COMPONENT) {
-        const [action, postId] = requestData.custom_id.split('_');
-
-        if (action === 'upvote') {
-            const post = data.posts[postId] || { upvotes: 0, users: [] };
-            if (!post.users.includes(member.user.id)) {
-                post.upvotes += 1;
-                post.users.push(member.user.id);
-                data.posts[postId] = post;
-
-                data.users[member.user.id] = data.users[member.user.id] || { totalUpvotesGiven: 0 };
-                data.users[member.user.id].totalUpvotesGiven += 1;
-
-                saveData(data);
-                return res.send({
-                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: { 
-                        content: `<@${member.user.id}> upvoted! Total upvotes: ${post.upvotes}`,
-                        flags: 64
-                    },
+                data: { content
+                    : `Top users by upvotes:\n${userLeaderboard}` },
                 });
+            }
+        } else if (type === InteractionType.MESSAGE_COMPONENT) {
+            // Handle message components
+            const [action, postId] = requestData.custom_id.split('_');
+    
+            if (action === 'upvote') {
+                // Handle upvote action
+                const post = data.posts[postId] || { upvotes: 0, users: [] };
+                if (!post.users.includes(member.user.id)) {
+                    post.upvotes += 1;
+                    post.users.push(member.user.id);
+                    data.posts[postId] = post;
+    
+                    data.users[member.user.id] = data.users[member.user.id] || { totalUpvotesGiven: 0 };
+                    data.users[member.user.id].totalUpvotesGiven += 1;
+    
+                    saveData(data);
+                    return res.send({
+                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                        data: { 
+                            content: `<@${member.user.id}> upvoted! Total upvotes: ${post.upvotes}`,
+                            flags: 64
+                        },
+                    });
                 } else {
                     return res.send({
                         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -201,74 +223,74 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                             flags: 64
                         },
                     });
+                }
             }
         }
-    }
-});
-
-app.get('/register_commands', async (req, res) => {
-    const slashCommands = [
-        {
-            name: "ping",
-            description: "Pings Distant",
-            options: [],
-        },
-        {
-            name: "video",
-            description: "Sends video from a social media post",
-            options: [{
-                name: "url",
-                description: "Social network post link",
-                type: 3,
-                required: true,
-            }],
-        },
-        {
-            name: "music",
-            description: "Sends the music link from all music streaming services",
-            options: [{
-                name: "url",
-                description: "Music streaming service title link",
-                type: 3,
-                required: true,
-            }],
-        },
-        {
-            name: "topuser",
-            description: "Displays the leaderboard of users with the most upvotes given",
-            options: [],
-        },
-    ];
-    //Get global commands
-    try {
-        const response = await discordApi.get(`/applications/${process.env.APPLICATION_ID}/commands`);
-        const commands = response.data;
-    } catch (error) {
-        console.error('Error getting global commands:', error);
-    }
-    //Delete each global commands
-    try {
-        const response = await discordApi.get(`/applications/${process.env.APPLICATION_ID}/commands`);
-        const commands = response.data;
-        for (const command of commands) {
-            await discordApi.delete(`/applications/${process.env.APPLICATION_ID}/commands/${command.id}`);
+    });
+    
+    app.get('/register_commands', async (req, res) => {
+        // Register slash commands
+        const slashCommands = [
+            {
+                name: "ping",
+                description: "Pings Distant",
+                options: [],
+            },
+            {
+                name: "video",
+                description: "Sends video from a social media post",
+                options: [{
+                    name: "url",
+                    description: "Social network post link",
+                    type: 3,
+                    required: true,
+                }],
+            },
+            {
+                name: "music",
+                description: "Sends the music link from all music streaming services",
+                options: [{
+                    name: "url",
+                    description: "Music streaming service title link",
+                    type: 3,
+                    required: true,
+                }],
+            },
+            {
+                name: "topuser",
+                description: "Displays the leaderboard of users with the most upvotes given",
+                options: [],
+            },
+        ];
+    
+        try {
+            // Get global commands
+            const response = await discordApi.get(`/applications/${process.env.APPLICATION_ID}/commands`);
+            const commands = response.data;
+    
+            // Delete existing global commands
+            for (const command of commands) {
+                await discordApi.delete(`/applications/${process.env.APPLICATION_ID}/commands/${command.id}`);
+            }
+        } catch (error) {
+            console.error('Error deleting global commands:', error);
         }
-    } catch (error) {
-        console.error('Error deleting global commands:', error);
-    }
-    // Register global commands
-    try {
-        await discordApi.put(`/applications/${process.env.APPLICATION_ID}/commands`, slashCommands);
-        res.send('Global commands have been registered');
-    } catch (error) {
-        console.error('Error registering commands:', error);
-        res.status(500).send('Error registering global commands');
-    }
-});
-
-app.get('/', (req, res) => {
-    res.redirect(`https://discord.com/oauth2/authorize?client_id=1212077510431608973&permissions=2048&scope=bot+applications.commands`);
-});
-
-const PORT = process.env.PORT || 8999;
-app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
+    
+        try {
+            // Register new global commands
+            await discordApi.put(`/applications/${process.env.APPLICATION_ID}/commands`, slashCommands);
+            res.send('Global commands have been registered');
+        } catch (error) {
+            console.error('Error registering commands:', error);
+            res.status(500).send('Error registering global commands');
+        }
+    });
+    
+    app.get('/', (req, res) => {
+        // Redirect to OAuth2 authorization link
+        res.redirect(`https://discord.com/oauth2/authorize?client_id=1212077510431608973&permissions=2048&scope=bot+applications.commands`);
+    });
+    
+    const PORT = process.env.PORT || 8999;
+    app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
+    
