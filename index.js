@@ -129,6 +129,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                     label: 'Spotify',
                     url: spotifyLink,
                 });
+                musicWord = `[Music](${spotifyLink})`;
             }
             if (youtubeLink) {
                 components.push({
@@ -137,7 +138,6 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                     label: 'YouTube',
                     url: youtubeLink,
                 });
-                musicWord = `[Music](${youtubeLink})`;
             }
             if (deezerLink) {
                 components.push({
