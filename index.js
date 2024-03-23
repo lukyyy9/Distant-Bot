@@ -170,48 +170,51 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 
 
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
-		const [action, postId] = requestData.custom_id.split('_');
-		if (action === 'upvote') {
-			const postRef = db.collection('posts').doc(postId);
-			const userVoteRef = postRef.collection('votes').doc(member.user.id);
+			const [action, postId] = requestData.custom_id.split('_');
+			const userId = member.user.id;
 
-			userVoteRef.get().then(doc => {
-				if (!doc.exists) {
-					return db.runTransaction(transaction => {
-						return transaction.get(postRef).then(postDoc => {
+			if (action === 'upvote') {
+				// Logique de traitement des upvotes
+				const postRef = db.collection('posts').doc(postId); // Référence au document du post
+				const userVoteRef = postRef.collection('votes').doc(userId); // Référence au vote de l'utilisateur
+
+				try {
+					const doc = await userVoteRef.get();
+					if (!doc.exists) {
+						await db.runTransaction(async (transaction) => {
+							const postDoc = await transaction.get(postRef);
 							let newVotesCount = postDoc.exists && postDoc.data().votesCount ? postDoc.data().votesCount + 1 : 1;
 							transaction.set(postRef, { votesCount: newVotesCount }, { merge: true });
 							transaction.set(userVoteRef, { upvoted: true });
-							return newVotesCount;
+							console.log(`Vote comptabilisé. Nouveau total de votes : ${newVotesCount}`);
 						});
-					}).then(newVotesCount => {
-						res.send({
+						console.log(`L'utilisateur ${userId} a voté pour le post ${postId}.`);
+						// Envoyer une réponse à Discord
+						res.json({
 							type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 							data: {
-								content: `<@${member.user.id}> upvoted this post. Total votes: ${newVotesCount}`,
-								flags: 64
+								content: `Vous avez voté pour ce post. Merci !`,
 							},
 						});
-					}).catch(error => {
-						console.error("Transaction failed: ", error);
-						res.status(500).send("Could not process your vote", error);
-					});
-				} else {
-					res.send({
-						type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-						data: {
-							content: `You have already upvoted this post.`,
-							flags: 64
-						},
-					});
+					} else {
+						console.log(`L'utilisateur ${userId} a déjà voté pour ce post.`);
+						// Envoyer une réponse à Discord indiquant que l'utilisateur a déjà voté
+						res.json({
+							type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+							data: {
+								content: `Vous avez déjà voté pour ce post.`,
+							},
+						});
+					}
+				} catch (error) {
+					console.error("Erreur lors du traitement du vote: ", error);
+					// Envoyer une réponse d'erreur à Discord
+					res.status(500).send("Erreur lors du traitement de votre vote");
 				}
-			}).catch(error => {
-				console.error("Error checking vote status: ", error);
-				res.status(500).send("Error processing your vote", error);
-			});
+			}
 		}
-	}
-});
+	});
+
 
 
 app.get('/register_commands', async (req, res) => {
