@@ -141,22 +141,23 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
         }
 
 		else if (requestData.name === 'topuser') {
-			const usersRef = db.collection('users');
+			const usersRef = db.collection('posts');
 			const snapshot = await usersRef.get();
 			let users = [];
 			snapshot.forEach(doc => {
 				users.push(doc.data());
 			});
-			users.sort((a, b) => b.upvotes - a.upvotes);
-			let topUsers = '';
-			for (let i = 0; i < 5 && i < users.length; i++) {
-				topUsers += `${i + 1}. <@${users[i].id}>: ${users[i].upvotes} upvotes\n`;
+			let topUsers = utils.getTopUsers(users);
+			let topUsersString = '';
+			for (let i = 0; i < topUsers.length; i++) {
+				topUsersString += `${i + 1}. <@${topUsers[i].userId}>: ${topUsers[i].upvotes}\n`;
 			}
 			return res.send({
 				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 				data: {
-					content: `Top 5 users with the most upvotes:\n${topUsers}`,
-				},
+					content: `Top users with the most upvotes given:\n${topUsersString}`,
+					flags: 64
+				}
 			});
 		}
 
@@ -165,24 +166,17 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
 
 		const [action, postId] = requestData.custom_id.split('_');
-        const userId = String(member.user.id); // Convertir en String pour assurer la compatibilité
+		const post = String(postId)
+        const userId = String(member.user.id);
 
         if (action === 'upvote') {
-			let upvote = utils.upvotePost(postId, userId);
-			if (upvote) {
-				return res.send({
+			utils.upvotePost(post, userId);
+			return res.send({
 					type: InteractionResponseType.UPDATE_MESSAGE,
 					data: {
 						content: `Post upvoted by <@${member.user.id}>`,
 					}
 				});
-			}
-			return res.send({
-				type: InteractionResponseType.UPDATE_MESSAGE,
-				data: {
-					content: `You have already upvoted this post`,
-				}
-			});
         }
     }
 });
