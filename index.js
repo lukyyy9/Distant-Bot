@@ -173,36 +173,38 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 		if (action === 'upvote') {
 			const postRef = db.collection('posts').doc(postId);
 
-			db.runTransaction(async (transaction) => {
-				const postDoc = await transaction.get(postRef);
-				let post = postDoc.exists ? postDoc.data() : { upvotes: 0, users: [] };
+			try {
+				await db.runTransaction(async (transaction) => {
+					const postDoc = await transaction.get(postRef);
+					let post = postDoc.exists ? postDoc.data() : { upvotes: 0, users: [] };
 
-				if (post.users.includes(member.user.id)) {
-					res.send({
-						type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-						data: {
-							content: `You've already upvoted this post, <@${member.user.id}>!`,
-							flags: 64
-						},
-					});
-				} else {
-					post.upvotes += 1;
-					post.users.push(member.user.id);
+					if (post.users.includes(member.user.id)) {
+						res.send({
+							type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+							data: {
+								content: `You've already upvoted this post, <@${member.user.id}>!`,
+								flags: 64
+							},
+						});
+					} else {
+						post.upvotes += 1;
+						post.users.push(member.user.id);
 
-					transaction.set(postRef, post);
+						transaction.set(postRef, post);
 
-					res.send({
-						type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-						data: {
-							content: `<@${member.user.id}> upvoted! Total upvotes: ${post.upvotes}`,
-							flags: 64
-						},
-					});
-				}
-			}).catch((error) => {
+						res.send({
+							type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+							data: {
+								content: `<@${member.user.id}> upvoted! Total upvotes: ${post.upvotes}`,
+								flags: 64
+							},
+						});
+					}
+				});
+			} catch (error) {
 				console.error("Transaction failed: ", error);
 				res.status(500).send("An error occurred while processing your upvote.");
-			});
+			}
 		}
 	}
 });

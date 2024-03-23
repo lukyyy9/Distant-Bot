@@ -152,10 +152,10 @@ const db = require('./firebase');
 // Remplacer par une fonction qui lit les données de Firestore
 async function loadData() {
     try {
-        const doc = await upvotesRef.get();
-        if (!doc.exists) {
-            console.log('No such document!');
-            return { posts: {}, users: {} }; // Retourner une structure de base si le document n'existe pas
+        const doc = await db.collection('upvotes').doc('data').get();
+        if (!doc.exists || !doc.data()) {
+            console.log('No existing upvotes data document or document is empty.');
+            return { posts: {}, users: {} }; // Retourner une structure de base si le document n'existe pas ou est vide
         } else {
             return doc.data(); // Retourner les données du document
         }
@@ -165,14 +165,15 @@ async function loadData() {
     }
 }
 
-// Remplacer par une fonction qui sauvegarde les données dans Firestore
 async function saveData(data) {
     try {
         await db.collection('upvotes').doc('data').set(data);
+        console.log('Upvotes data successfully saved to Firestore.');
     } catch (error) {
         console.error('Error writing to upvotes data in Firestore:', error);
     }
 }
+
 
 
 module.exports = {
