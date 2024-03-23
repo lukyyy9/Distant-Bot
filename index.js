@@ -160,13 +160,13 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 
 
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
-		const [action, postId] = requestData.custom_id.split('_');
+		const [action] = requestData.custom_id.split('_');
 
 		if (action === 'upvote') {
 			res.send({
 				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 				data: {
-					content: `<@${member.user.id}> upvoted! Total upvotes: ${upvotes}`,
+					content: `<@${member.user.id}> upvoted! Total upvotes: `,
 					flags: 64
 				},
 			});
