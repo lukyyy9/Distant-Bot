@@ -168,39 +168,21 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
         const userId = String(member.user.id); // Convertir en String pour assurer la compatibilité
 
         if (action === 'upvote') {
-            const postRef = db.collection('posts').doc(postId);
-            const userVoteRef = postRef.collection('votes').doc(userId);
-
-            try {
-                const doc = await userVoteRef.get();
-                if (!doc.exists) {
-                    await db.runTransaction(async (transaction) => {
-                        const postDoc = await transaction.get(postRef);
-                        let newVotesCount = postDoc.exists && postDoc.data().votesCount ? postDoc.data().votesCount + 1 : 1;
-                        transaction.set(postRef, { votesCount: newVotesCount }, { merge: true });
-                        transaction.set(userVoteRef, { upvoted: true });
-                    });
-
-                    // Répondre à l'interaction Discord pour confirmer le vote
-                    res.json({
-                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                        data: {
-                            content: `Votre vote a été comptabilisé pour le post ${postId}. Merci !`,
-                        },
-                    });
-                } else {
-                    // Informer l'utilisateur qu'il a déjà voté
-                    res.json({
-                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                        data: {
-                            content: `Vous avez déjà voté pour le post ${postId}.`,
-                        },
-                    });
-                }
-            } catch (error) {
-                console.error("Erreur lors du traitement du vote: ", error);
-                res.status(500).send("Erreur lors du traitement de votre vote");
-            }
+			let upvote = utils.upvotePost(postId, userId);
+			if (upvote) {
+				return res.send({
+					type: InteractionResponseType.UPDATE_MESSAGE,
+					data: {
+						content: `Post upvoted by <@${member.user.id}>`,
+					}
+				});
+			}
+			return res.send({
+				type: InteractionResponseType.UPDATE_MESSAGE,
+				data: {
+					content: `You have already upvoted this post`,
+				}
+			});
         }
     }
 });

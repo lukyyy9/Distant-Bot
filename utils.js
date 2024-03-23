@@ -173,6 +173,36 @@ async function saveData(data) {
     }
 }
 
+async function upvote(postID, userId) {
+	const postRef = db.collection('posts').doc(postID);
+	const userVoteRef = postRef.collection('votes').doc(userId);
+
+	console.log(`Début du processus de upvote pour le post ${postID} par l'utilisateur ${userId}`);
+
+	userVoteRef.get().then(doc => {
+		if (!doc.exists) {
+			console.log(`L'utilisateur ${userId} n'a pas encore voté pour le post ${postID}. Traitement du vote.`);
+			return db.runTransaction(transaction => {
+				return transaction.get(postRef).then(postDoc => {
+					let newVotesCount = postDoc.exists && postDoc.data().votesCount ? postDoc.data().votesCount + 1 : 1;
+					transaction.set(postRef, { votesCount: newVotesCount }, { merge: true });
+					transaction.set(userVoteRef, { upvoted: true });
+					return newVotesCount;
+				});
+			}).then(newVotesCount => {
+				console.log(`Vote traité avec succès. Total des votes pour le post ${postID}: ${newVotesCount}`);
+			}).catch(error => {
+				console.error("La transaction a échoué: ", error);
+			});
+		} else {
+			console.log(`L'utilisateur ${userId} a déjà voté pour le post ${postID}.`);
+		}
+	}).catch(error => {
+		console.error("Erreur lors de la vérification du statut de vote: ", error);
+	});
+
+}
+
 module.exports = {
 	getSpotifyAccessToken,
 	getTrackDetailsFromSpotify,
@@ -185,4 +215,5 @@ module.exports = {
 	getRidOfVmTiktok,
 	loadData,
 	saveData,
+	upvote
 };
