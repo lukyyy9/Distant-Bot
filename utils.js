@@ -173,8 +173,6 @@ async function saveData(data) {
     }
 }
 
-
-
 module.exports = {
 	getSpotifyAccessToken,
 	getTrackDetailsFromSpotify,
@@ -186,5 +184,5 @@ module.exports = {
 	getService,
 	getRidOfVmTiktok,
 	loadData,
-	saveData
+	saveData,
 };
