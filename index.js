@@ -175,7 +175,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 			res.send({
 				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 				data: {
-					content: `<@${member.user.id}> upvoted! Total upvotes: ${post.upvotes}`,
+					content: `<@${member.user.id}> upvoted! Total upvotes: ${postId}`,
 					flags: 64
 				},
 			});
