@@ -162,46 +162,32 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
 		const [action, postId] = requestData.custom_id.split('_');
 		if (action === 'upvote') {
-			const postRef = db.collection('posts').doc(postId);
+		const postRef = db.collection('posts').doc(postId);
 
-			db.runTransaction(async (transaction) => {
-				const postDoc = await transaction.get(postRef);
-				let post = postDoc.data();
+					db.runTransaction(async (transaction) => {
+						const postDoc = await transaction.get(postRef);
+						let post = postDoc.data();
 
-				if (!post) {
-					console.log("Post does not exist");
-					throw new Error("Post does not exist.");
-				}
+						if (!post) {
+							console.log("Post does not exist");
+							throw new Error("Post does not exist.");
+						}
+						const upvotes = (post.upvotes || 0) + 1;
+						const users = post.users?.concat(member.user.id) ?? [member.user.id];
 
-				if (post.users && post.users.includes(member.user.id)) {
-					res.send({
-						type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-						data: {
-							content: `You've already upvoted this post, <@${member.user.id}>!`,
-							flags: 64
-						},
-					});
-				} else {
-					const upvotes = (post.upvotes || 0) + 1;
-					const users = post.users ? [...post.users, member.user.id] : [member.user.id];
+						await transaction.set(postRef, { upvotes, users }, { merge: true });
 
-					await transaction.set(postRef, { upvotes, users }, { merge: true });
-
-					res.send({
-						type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-						data: {
-							content: `<@${member.user.id}> upvoted! Total upvotes: ${upvotes}`,
-							flags: 64
-						},
+						res.send({
+							type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+							data: {
+								content: `<@${member.user.id}> upvoted! Total upvotes: ${upvotes}`,
+								flags: 64
+							},
+						});
 					});
 				}
-			}).catch((error) => {
-				console.error("Transaction failed: ", error);
-				res.status(500).send("An error occurred while processing your upvote.");
-			});
-		}
-	}
-});
+			}
+		});
 
 app.get('/register_commands', async (req, res) => {
     const slashCommands = [
