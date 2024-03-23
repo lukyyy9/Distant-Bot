@@ -174,7 +174,19 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 		if (action === 'upvote') {
 			let upvotesDoc = db.collection('upvotes').doc('data');
 			let upvotesData = await loadData(upvotesDoc);
-			let totalupvote = upvotesData.totalUpvotes + 1;
+			let totalupvote;
+			if (!upvotesData) {
+				totalupvote = 1;
+				saveData(upvotesDoc, { totalUpvotes: totalupvote, postIds: [postId] });
+				res.send({
+					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+					data: {
+						content: `<@${member.user.id}> upvoted! Total upvotes: ${totalupvote}`,
+						flags: 64
+					},
+				});
+			}
+			totalupvote = upvotesData.totalUpvotes + 1;
 			let postIds = upvotesData.postIds || [];
 
 			if (!postIds.includes(postId)) {
