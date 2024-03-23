@@ -140,21 +140,9 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
         }
 
 		else if (requestData.name === 'topuser') {
-			db.collection('users').orderBy('totalUpvotesGiven', 'desc').limit(10).get()
-			.then(snapshot => {
-				const userLeaderboard = [];
-				let index = 0;
-				snapshot.forEach(doc => {
-					userLeaderboard.push(`${++index}. <@${doc.id}> with ${doc.data().totalUpvotesGiven} upvotes`);
-				});
-				res.send({
-					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-					data: { content: `Top users by upvotes:\n${userLeaderboard.join('\n')}` },
-				});
-			})
-			.catch(error => {
-				console.error("Error fetching top users: ", error);
-				res.status(500).send("Error fetching top users");
+			res.send({
+				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+				data: { content: `Top users by upvotes:` },
 			});
 		}
 
