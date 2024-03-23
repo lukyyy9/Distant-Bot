@@ -172,20 +172,17 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
 		const [action, postId] = requestData.custom_id.split('_');
 		if (action === 'upvote') {
-			const postRef = db.collection('posts').doc(postId); // Référence au document du post
-			const userVoteRef = postRef.collection('votes').doc(member.user.id); // Référence au vote de l'utilisateur
+			const postRef = db.collection('posts').doc(postId);
+			const userVoteRef = postRef.collection('votes').doc(member.user.id);
 
 			userVoteRef.get().then(doc => {
 				if (!doc.exists) {
-					// L'utilisateur n'a pas encore voté pour ce post
 					return db.runTransaction(transaction => {
 						return transaction.get(postRef).then(postDoc => {
 							let newVotesCount = postDoc.exists && postDoc.data().votesCount ? postDoc.data().votesCount + 1 : 1;
-							// Mise à jour ou création du document du post avec le nouveau compteur de votes
 							transaction.set(postRef, { votesCount: newVotesCount }, { merge: true });
-							// Création du document de vote pour l'utilisateur
 							transaction.set(userVoteRef, { upvoted: true });
-							return newVotesCount; // Nouveau total des votes
+							return newVotesCount;
 						});
 					}).then(newVotesCount => {
 						res.send({
@@ -197,10 +194,9 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 						});
 					}).catch(error => {
 						console.error("Transaction failed: ", error);
-						res.status(500).send("Could not process your vote");
+						res.status(500).send("Could not process your vote", error);
 					});
 				} else {
-					// L'utilisateur a déjà voté pour ce post
 					res.send({
 						type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 						data: {
@@ -211,7 +207,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 				}
 			}).catch(error => {
 				console.error("Error checking vote status: ", error);
-				res.status(500).send("Error processing your vote");
+				res.status(500).send("Error processing your vote", error);
 			});
 		}
 	}
