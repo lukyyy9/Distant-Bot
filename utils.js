@@ -152,7 +152,6 @@ const db = require('./firebase');
 // Remplacer par une fonction qui lit les données de Firestore
 async function loadData() {
     try {
-        const upvotesRef = db.collection('upvotes').doc('data');
         const doc = await upvotesRef.get();
         if (!doc.exists) {
             console.log('No such document!');

@@ -140,31 +140,50 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
         }
 
 		else if (requestData.name === 'topuser') {
-			res.send({
-				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-				data: { content: `Top users by upvotes:` },
+			db.collection('users').orderBy('totalUpvotesGiven', 'desc').limit(10).get()
+			.then(snapshot => {
+				const userLeaderboard = [];
+				let index = 0;
+				snapshot.forEach(doc => {
+					userLeaderboard.push(`${++index}. <@${doc.id}> with ${doc.data().totalUpvotesGiven} upvotes`);
+				});
+				res.send({
+					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+					data: { content: `Top users by upvotes:\n${userLeaderboard.join('\n')}` },
+				});
+			})
+			.catch(error => {
+				console.error("Error fetching top users: ", error);
+				res.status(500).send("Error fetching top users");
 			});
 		}
 
 
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
-		const [action] = requestData.custom_id.split('_');
-
+		const [action, postId] = requestData.custom_id.split('_');
 		if (action === 'upvote') {
-			// Identifier le document pour le post spécifique
 			const postRef = db.collection('posts').doc(postId);
+			let alreadyVoted = false;
 
 			db.runTransaction(async (transaction) => {
-				const postDoc = await transaction.get(postRef);
-				let post = postDoc.data();
-
-				if (!post) {
+				const doc = await transaction.get(postRef);
+				if (!doc.exists) {
 					console.log("Post does not exist");
 					throw new Error("Post does not exist.");
 				}
-
-				// Vérifier si l'utilisateur a déjà voté
-				if (post.users && post.users.includes(member.user.id)) {
+				let post = doc.data();
+				if (!post.users) {
+					post.users = [];
+				}
+				if (post.users.includes(member.user.id)) {
+					alreadyVoted = true;
+					return; // Si l'utilisateur a déjà voté, on termine la transaction ici.
+				}
+				post.upvotes = (post.upvotes || 0) + 1;
+				post.users.push(member.user.id);
+				transaction.set(postRef, post); // Mise à jour du document avec les nouvelles valeurs.
+			}).then(() => {
+				if (alreadyVoted) {
 					res.send({
 						type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 						data: {
@@ -173,24 +192,19 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 						},
 					});
 				} else {
-					// Mettre à jour les upvotes et la liste des utilisateurs
-					const upvotes = (post.upvotes || 0) + 1;
-					const users = post.users ? [...post.users, member.user.id] : [member.user.id];
-
-					// Appliquer la mise à jour
-					await transaction.set(postRef, { upvotes, users }, { merge: true });
-
 					res.send({
 						type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 						data: {
-							content: `<@${member.user.id}> upvoted! Total upvotes: ${upvotes}`,
+							content: `<@${member.user.id}> upvoted! Total upvotes updated.`,
 							flags: 64
 						},
 					});
 				}
 			}).catch((error) => {
 				console.error("Transaction failed: ", error);
-				res.status(500).send("An error occurred while processing your upvote.");
+				res.status(500).send({
+					content: "An error occurred while processing your upvote.",
+				});
 			});
 		}
 	}
