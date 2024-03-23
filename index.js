@@ -172,42 +172,46 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
 		const [action, postId] = requestData.custom_id.split('_');
 		if (action === 'upvote') {
-			let upvotesDoc = db.collection('upvotes').doc('data');
-			let upvotesData = await loadData(upvotesDoc);
-			let totalupvote;
-			if (!upvotesData) {
-				totalupvote = 1;
-				saveData(upvotesDoc, { totalUpvotes: totalupvote, postIds: [postId] });
-				res.send({
-					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-					data: {
-						content: `<@${member.user.id}> upvoted! Total upvotes: ${totalupvote}`,
-						flags: 64
-					},
-				});
-			}
-			totalupvote = upvotesData.totalUpvotes + 1;
-			let postIds = upvotesData.postIds || [];
+			const postRef = db.collection('upvotes').doc(postId); // Référence au document du post
+			const userVoteRef = postRef.collection('votes').doc(member.user.id); // Référence au vote de l'utilisateur
 
-			if (!postIds.includes(postId)) {
-				postIds.push(postId);
-				saveData(upvotesDoc, { totalUpvotes: totalupvote, postIds: postIds });
+			db.runTransaction((transaction) => {
+				return transaction.get(userVoteRef).then((userVoteDoc) => {
+					if (!userVoteDoc.exists) {
+						// L'utilisateur n'a pas encore voté pour ce post, procéder au vote
+						transaction.set(userVoteRef, { upvoted: true });
+						return transaction.get(postRef).then((postDoc) => {
+							let votesCount = postDoc.exists && postDoc.data().votesCount ? postDoc.data().votesCount + 1 : 1;
+							transaction.set(postRef, { votesCount: votesCount }, { merge: true }); // Mise à jour du compteur de votes
+							return votesCount; // Retourner le nouveau nombre total de votes pour ce post
+						});
+					} else {
+						// L'utilisateur a déjà voté pour ce post
+						throw new Error('AlreadyVoted');
+					}
+				});
+			}).then((votesCount) => {
 				res.send({
 					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 					data: {
-						content: `<@${member.user.id}> upvoted! Total upvotes: ${totalupvote}`,
+						content: `<@${member.user.id}> upvoted this post. Total votes: ${votesCount}`,
 						flags: 64
 					},
 				});
-			} else {
-				res.send({
-					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-					data: {
-						content: `<@${member.user.id}>, you have already upvoted this post.`,
-						flags: 64
-					},
-				});
-			}
+			}).catch((error) => {
+				if (error.message === 'AlreadyVoted') {
+					res.send({
+						type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+						data: {
+							content: `You have already upvoted this post.`,
+							flags: 64
+						},
+					});
+				} else {
+					console.error("Error processing vote: ", error);
+					res.status(500).send("Error processing your vote");
+				}
+			});
 		}
 	}
 });
