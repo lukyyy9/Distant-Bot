@@ -162,32 +162,18 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
 		const [action, postId] = requestData.custom_id.split('_');
 		if (action === 'upvote') {
-		const postRef = db.collection('posts').doc(postId);
+			const postRef = db.collection('posts').doc(postId);
 
-					db.runTransaction(async (transaction) => {
-						const postDoc = await transaction.get(postRef);
-						let post = postDoc.data();
-
-						if (!post) {
-							console.log("Post does not exist");
-							throw new Error("Post does not exist.");
-						}
-						const upvotes = (post.upvotes || 0) + 1;
-						const users = post.users?.concat(member.user.id) ?? [member.user.id];
-
-						await transaction.set(postRef, { upvotes, users }, { merge: true });
-
-						res.send({
-							type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-							data: {
-								content: `<@${member.user.id}> upvoted! Total upvotes: ${upvotes}`,
-								flags: 64
-							},
-						});
-					});
-				}
-			}
-		});
+			res.send({
+				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+				data: {
+					content: `<@${member.user.id}> ${postRef} upvoted! Total upvotes: ${upvotes}`,
+					flags: 64
+				},
+			});
+		};
+	}
+});
 
 app.get('/register_commands', async (req, res) => {
     const slashCommands = [
