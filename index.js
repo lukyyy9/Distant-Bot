@@ -141,29 +141,22 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
         }
 
 		else if (requestData.name === 'topuser') {
-			db.collection('users').orderBy('totalUpvotesGiven', 'desc').limit(10).get()
-			.then(snapshot => {
-				if (snapshot.empty) {
-					res.send({
-						type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-						data: { content: "There are no users with upvotes yet!" },
-					});
-				} else {
-					const userLeaderboard = [];
-					let index = 0;
-					snapshot.forEach(doc => {
-						const user = doc.data();
-						userLeaderboard.push(`${++index}. <@${doc.id}> with ${user.totalUpvotesGiven} upvotes`);
-					});
-					res.send({
-						type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-						data: { content: `Top users by upvotes:\n${userLeaderboard.join('\n')}` },
-					});
-				}
-			})
-			.catch(error => {
-				console.error("Error fetching top users: ", error);
-				res.status(500).send("Error fetching top users");
+			const usersRef = db.collection('users');
+			const snapshot = await usersRef.get();
+			let users = [];
+			snapshot.forEach(doc => {
+				users.push(doc.data());
+			});
+			users.sort((a, b) => b.upvotes - a.upvotes);
+			let topUsers = '';
+			for (let i = 0; i < 5 && i < users.length; i++) {
+				topUsers += `${i + 1}. <@${users[i].id}>: ${users[i].upvotes} upvotes\n`;
+			}
+			return res.send({
+				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+				data: {
+					content: `Top 5 users with the most upvotes:\n${topUsers}`,
+				},
 			});
 		}
 
