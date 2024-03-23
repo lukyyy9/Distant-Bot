@@ -148,8 +148,6 @@ async function getRidOfVmTiktok(url) {
     return `https://www.tiktok.com/@${username}/video/${videoId}`;
 }
 
-const db = require('./firebase');
-
 // Remplacer par une fonction qui lit les données de Firestore
 async function loadData() {
     try {
