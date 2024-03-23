@@ -1,4 +1,5 @@
 const axios = require('axios'); // Ensure Axios is imported
+const db = require('./firebase.js'); // Ensure Firebase is imported
 
 async function getSpotifyAccessToken(clientId, clientSecret) {
   try {
@@ -147,14 +148,72 @@ async function getRidOfVmTiktok(url) {
     return `https://www.tiktok.com/@${username}/video/${videoId}`;
 }
 
+// Remplacer par une fonction qui lit les données de Firestore
+async function loadData() {
+    try {
+        const doc = await db.collection('upvotes').doc('data').get();
+        if (!doc.exists || !doc.data()) {
+            console.log('No existing upvotes data document or document is empty.');
+            return { posts: {}, users: {} }; // Retourner une structure de base si le document n'existe pas ou est vide
+        } else {
+            return doc.data(); // Retourner les données du document
+        }
+    } catch (error) {
+        console.error('Error reading upvotes data from Firestore:', error);
+        return { posts: {}, users: {} };
+    }
+}
+
+async function saveData(data) {
+    try {
+        await db.collection('upvotes').doc('data').set(data);
+        console.log('Upvotes data successfully saved to Firestore.');
+    } catch (error) {
+        console.error('Error writing to upvotes data in Firestore:', error);
+    }
+}
+
+async function upvote(postID, userId) {
+	const postRef = db.collection('posts').doc(postID);
+	const userVoteRef = postRef.collection('votes').doc(userId);
+
+	console.log(`Début du processus de upvote pour le post ${postID} par l'utilisateur ${userId}`);
+
+	userVoteRef.get().then(doc => {
+		if (!doc.exists) {
+			console.log(`L'utilisateur ${userId} n'a pas encore voté pour le post ${postID}. Traitement du vote.`);
+			return db.runTransaction(transaction => {
+				return transaction.get(postRef).then(postDoc => {
+					let newVotesCount = postDoc.exists && postDoc.data().votesCount ? postDoc.data().votesCount + 1 : 1;
+					transaction.set(postRef, { votesCount: newVotesCount }, { merge: true });
+					transaction.set(userVoteRef, { upvoted: true });
+					return newVotesCount;
+				});
+			}).then(newVotesCount => {
+				console.log(`Vote traité avec succès. Total des votes pour le post ${postID}: ${newVotesCount}`);
+			}).catch(error => {
+				console.error("La transaction a échoué: ", error);
+			});
+		} else {
+			console.log(`L'utilisateur ${userId} a déjà voté pour le post ${postID}.`);
+		}
+	}).catch(error => {
+		console.error("Erreur lors de la vérification du statut de vote: ", error);
+	});
+
+}
+
 module.exports = {
-  getSpotifyAccessToken,
-  getTrackDetailsFromSpotify,
-  getTrackDetailsFromYouTube,
-  getTrackDetailsFromDeezer,
-  searchOnSpotify,
-  searchOnDeezer,
-  searchOnYouTube,
-  getService,
-  getRidOfVmTiktok,
+	getSpotifyAccessToken,
+	getTrackDetailsFromSpotify,
+	getTrackDetailsFromYouTube,
+	getTrackDetailsFromDeezer,
+	searchOnSpotify,
+	searchOnDeezer,
+	searchOnYouTube,
+	getService,
+	getRidOfVmTiktok,
+	loadData,
+	saveData,
+	upvote
 };
