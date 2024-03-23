@@ -148,13 +148,13 @@ async function getRidOfVmTiktok(url) {
 }
 
 module.exports = {
-  getSpotifyAccessToken,
-  getTrackDetailsFromSpotify,
-  getTrackDetailsFromYouTube,
-  getTrackDetailsFromDeezer,
-  searchOnSpotify,
-  searchOnDeezer,
-  searchOnYouTube,
-  getService,
-  getRidOfVmTiktok,
+	getSpotifyAccessToken,
+	getTrackDetailsFromSpotify,
+	getTrackDetailsFromYouTube,
+	getTrackDetailsFromDeezer,
+	searchOnSpotify,
+	searchOnDeezer,
+	searchOnYouTube,
+	getService,
+	getRidOfVmTiktok,
 };

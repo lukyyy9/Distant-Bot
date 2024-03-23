@@ -158,7 +158,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 }
             });
         }
-        
+
         else if (requestData.name === 'topuser') {
             const userLeaderboard = Object.entries(data.users)
                 .sort(([, a], [, b]) => b.totalUpvotesGiven - a.totalUpvotesGiven)
@@ -170,7 +170,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                 data: { content: `Top users by upvotes:\n${userLeaderboard}` },
             });
-        } 
+        }
 
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
         const [action, postId] = requestData.custom_id.split('_');
@@ -188,7 +188,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 saveData(data);
                 return res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: { 
+                    data: {
                         content: `<@${member.user.id}> upvoted! Total upvotes: ${post.upvotes}`,
                         flags: 64
                     },
@@ -196,7 +196,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 } else {
                     return res.send({
                         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                        data: { 
+                        data: {
                             content: `You've already upvoted this post, <@${member.user.id}>!`,
                             flags: 64
                         },
@@ -236,13 +236,12 @@ app.get('/register_commands', async (req, res) => {
         {
             name: "topuser",
             description: "Displays the leaderboard of users with the most upvotes given",
-            options: [],
-        },
+            options: []
+		},
     ];
     //Get global commands
     try {
-        const response = await discordApi.get(`/applications/${process.env.APPLICATION_ID}/commands`);
-        const commands = response.data;
+        await discordApi.get(`/applications/${process.env.APPLICATION_ID}/commands`);
     } catch (error) {
         console.error('Error getting global commands:', error);
     }
