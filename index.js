@@ -142,6 +142,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
         }
 
 	else if (requestData.name === 'topuser') {
+		const db = firebase.firestore();
 		db.collection('users').orderBy('totalUpvotesGiven', 'desc').limit(10).get()
 		.then(snapshot => {
 			const userLeaderboard = [];
@@ -160,29 +161,38 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 		});
 	}
 
-    } else if (type === InteractionType.MESSAGE_COMPONENT) {
-        const [action, postId] = requestData.custom_id.split('_');
+	} else if (type === InteractionType.MESSAGE_COMPONENT) {
+		const [action, postId] = requestData.custom_id.split('_');
 
-        if (action === 'upvote') {
+		if (action === 'upvote') {
+			const db = firebase.firestore();
 			const postRef = db.collection('posts').doc(postId);
-			db.runTransaction((transaction) => {
-				return transaction.get(postRef).then((doc) => {
-					if (!doc.exists) {
-						throw Error("Document does not exist!");
+			const userRef = db.collection('users').doc(member.user.id);
+
+			return db.runTransaction((transaction) => {
+				return transaction.get(postRef).then((postDoc) => {
+					if (!postDoc.exists) {
+						throw "Document does not exist!";
 					}
-					let post = doc.data();
-					if (!post.users.includes(member.user.id)) {
-						post.upvotes += 1;
-						post.users.push(member.user.id);
-						transaction.update(postRef, post);
-					}
+
+					const newUpvotes = (postDoc.data().upvotes || 0) + 1;
+					transaction.update(postRef, { upvotes: newUpvotes });
+
+					return transaction.get(userRef);
+				}).then((userDoc) => {
+					const newTotalUpvotesGiven = (userDoc.data().totalUpvotesGiven || 0) + 1;
+					transaction.update(userRef, { totalUpvotesGiven: newTotalUpvotesGiven });
 				});
 			}).then(() => {
-				console.log("Transaction successfully committed!");
+				return res.send({
+					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+					data: {
+						content: `<@${member.user.id}> upvoted! Total upvotes: ${post.upvotes}`,
+						flags: 64
+					},
+				});
 			}).catch((error) => {
-				console.log("Transaction failed: ", error);
-			});
-			} else {
+				console.error("Transaction failed: ", error);
 				return res.send({
 					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 					data: {
@@ -190,8 +200,9 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 						flags: 64
 					},
 				});
+			});
 		}
-    }
+	}
 });
 
 app.get('/register_commands', async (req, res) => {
