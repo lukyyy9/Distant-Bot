@@ -147,23 +147,34 @@ async function getRidOfVmTiktok(url) {
     return `https://www.tiktok.com/@${username}/video/${videoId}`;
 }
 
-const loadData = () => {
+const db = require('./firebase');
+
+// Remplacer par une fonction qui lit les données de Firestore
+async function loadData() {
     try {
-        const data = fs.readFileSync(dataFilePath, 'utf8');
-        return JSON.parse(data);
+        const upvotesRef = db.collection('upvotes').doc('data');
+        const doc = await upvotesRef.get();
+        if (!doc.exists) {
+            console.log('No such document!');
+            return { posts: {}, users: {} }; // Retourner une structure de base si le document n'existe pas
+        } else {
+            return doc.data(); // Retourner les données du document
+        }
     } catch (error) {
-        console.error('Error reading upvotes data file:', error);
+        console.error('Error reading upvotes data from Firestore:', error);
         return { posts: {}, users: {} };
     }
-};
+}
 
-const saveData = (data) => {
+// Remplacer par une fonction qui sauvegarde les données dans Firestore
+async function saveData(data) {
     try {
-        fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2), 'utf8');
+        await db.collection('upvotes').doc('data').set(data);
     } catch (error) {
-        console.error('Error writing to upvotes data file:', error);
+        console.error('Error writing to upvotes data in Firestore:', error);
     }
-};
+}
+
 
 module.exports = {
 	getSpotifyAccessToken,

@@ -1,9 +1,11 @@
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
-const utils = require('./utils.js');
 const fs = require('fs');
 const path = require('path');
+const db = require('./firebase.js');
+const utils = require('./utils.js');
+
 const { InteractionType, InteractionResponseType, verifyKeyMiddleware } = require('discord-interactions');
 
 const app = express();
@@ -139,50 +141,57 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             });
         }
 
-        else if (requestData.name === 'topuser') {
-            const userLeaderboard = Object.entries(data.users)
-                .sort(([, a], [, b]) => b.totalUpvotesGiven - a.totalUpvotesGiven)
-                .slice(0, 10)
-                .map(([userId, { totalUpvotesGiven }], index) => `${index + 1}. <@${userId}> with ${totalUpvotesGiven} upvotes`)
-                .join('\n');
-
-            return res.send({
-                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                data: { content: `Top users by upvotes:\n${userLeaderboard}` },
-            });
-        }
+	else if (requestData.name === 'topuser') {
+		db.collection('users').orderBy('totalUpvotesGiven', 'desc').limit(10).get()
+		.then(snapshot => {
+			const userLeaderboard = [];
+			let index = 0;
+			snapshot.forEach(doc => {
+				const user = doc.data();
+				userLeaderboard.push(`${++index}. <@${doc.id}> with ${user.totalUpvotesGiven} upvotes`);
+			});
+			return res.send({
+				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+				data: { content: `Top users by upvotes:\n${userLeaderboard.join('\n')}` },
+			});
+		})
+		.catch(error => {
+			console.error("Error fetching top users: ", error);
+		});
+	}
 
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
         const [action, postId] = requestData.custom_id.split('_');
 
         if (action === 'upvote') {
-            const post = data.posts[postId] || { upvotes: 0, users: [] };
-            if (!post.users.includes(member.user.id)) {
-                post.upvotes += 1;
-                post.users.push(member.user.id);
-                data.posts[postId] = post;
-
-                data.users[member.user.id] = data.users[member.user.id] || { totalUpvotesGiven: 0 };
-                data.users[member.user.id].totalUpvotesGiven += 1;
-
-                saveData(data);
-                return res.send({
-                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: {
-                        content: `<@${member.user.id}> upvoted! Total upvotes: ${post.upvotes}`,
-                        flags: 64
-                    },
-                });
-                } else {
-                    return res.send({
-                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                        data: {
-                            content: `You've already upvoted this post, <@${member.user.id}>!`,
-                            flags: 64
-                        },
-                    });
-            }
-        }
+			// Exemple de mise à jour d'un post avec Firebase
+			const postRef = db.collection('posts').doc(postId);
+			db.runTransaction((transaction) => {
+				return transaction.get(postRef).then((doc) => {
+					if (!doc.exists) {
+						throw new Error("Document does not exist!");
+					}
+					let post = doc.data();
+					if (!post.users.includes(member.user.id)) {
+						post.upvotes += 1;
+						post.users.push(member.user.id);
+						transaction.update(postRef, post);
+					}
+				});
+			}).then(() => {
+				console.log("Transaction successfully committed!");
+			}).catch((error) => {
+				console.log("Transaction failed: ", error);
+			});
+			} else {
+				return res.send({
+					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+					data: {
+						content: `You've already upvoted this post, <@${member.user.id}>!`,
+						flags: 64
+					},
+				});
+		}
     }
 });
 
