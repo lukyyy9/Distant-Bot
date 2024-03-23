@@ -147,6 +147,24 @@ async function getRidOfVmTiktok(url) {
     return `https://www.tiktok.com/@${username}/video/${videoId}`;
 }
 
+const loadData = () => {
+    try {
+        const data = fs.readFileSync(dataFilePath, 'utf8');
+        return JSON.parse(data);
+    } catch (error) {
+        console.error('Error reading upvotes data file:', error);
+        return { posts: {}, users: {} };
+    }
+};
+
+const saveData = (data) => {
+    try {
+        fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2), 'utf8');
+    } catch (error) {
+        console.error('Error writing to upvotes data file:', error);
+    }
+};
+
 module.exports = {
 	getSpotifyAccessToken,
 	getTrackDetailsFromSpotify,
@@ -157,4 +175,6 @@ module.exports = {
 	searchOnYouTube,
 	getService,
 	getRidOfVmTiktok,
+	loadData,
+	saveData
 };

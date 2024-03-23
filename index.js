@@ -22,26 +22,6 @@ const verifyMiddleware = verifyKeyMiddleware(process.env.PUBLIC_KEY);
 
 const dataFilePath = path.join(__dirname, 'upvote.json');
 
-const loadData = () => {
-    try {
-        const data = fs.readFileSync(dataFilePath, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        console.error('Error reading upvotes data file:', error);
-        return { posts: {}, users: {} };
-    }
-};
-
-const saveData = (data) => {
-    try {
-        fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2), 'utf8');
-    } catch (error) {
-        console.error('Error writing to upvotes data file:', error);
-    }
-};
-
-let data = loadData();
-
 app.post('/interactions', verifyMiddleware, async (req, res) => {
     const { type, data: requestData, member } = req.body;
 
