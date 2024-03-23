@@ -172,50 +172,14 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
 		const [action, postId] = requestData.custom_id.split('_');
 		if (action === 'upvote') {
-			const postRef = db.collection('posts').doc(postId);
-
-			try {
-				await db.runTransaction(async (transaction) => {
-					// Load data before the transaction
-					const data = await loadData(db.collection('upvotes').doc('data'));
-
-					const postDoc = await transaction.get(postRef);
-					let post = postDoc.exists ? postDoc.data() : { upvotes: 0, users: [] };
-
-					if (post.users.includes(member.user.id)) {
-						res.send({
-							type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-							data: {
-								content: `You've already upvoted this post, <@${member.user.id}>!`,
-								flags: 64
-							},
-						});
-					} else {
-						post.upvotes += 1;
-						post.users.push(member.user.id);
-
-						transaction.set(postRef, post);
-
-						// Update data within the transaction
-						data.posts[postId] = (data.posts[postId] || 0) + 1;
-						data.users[member.user.id] = (data.users[member.user.id] || 0) + 1;
-						await saveData(data);
-
-						res.send({
-							type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-							data: {
-								content: `<@${member.user.id}> upvoted! Total upvotes: ${post.upvotes}`,
-								flags: 64
-							},
-						});
-					}
-				});
-			} catch (error) {
-				console.error("Transaction failed: ", error);
-				res.status(500).send("An error occurred while processing your upvote.");
-			}
+			res.send({
+				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+				data: {
+					content: `<@${member.user.id}> upvoted! Total upvotes: ${post.upvotes}`,
+					flags: 64
+				},
+			});
 		}
-
 	}
 });
 
