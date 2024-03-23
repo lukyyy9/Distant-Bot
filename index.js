@@ -141,22 +141,12 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
         }
 
 		else if (requestData.name === 'topuser') {
-			const usersRef = db.collection('posts');
-			const snapshot = await usersRef.get();
-			let users = [];
-			snapshot.forEach(doc => {
-				users.push(doc.data());
-			});
-			let topUsers = utils.getTopUsers(users);
-			let topUsersString = '';
-			for (let i = 0; i < topUsers.length; i++) {
-				topUsersString += `${i + 1}. <@${topUsers[i].userId}>: ${topUsers[i].upvotes}\n`;
-			}
+			let topuser = await utils.getTopUser();
+
 			return res.send({
 				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 				data: {
-					content: `Top users with the most upvotes given:\n${topUsersString}`,
-					flags: 64
+					content: `Top user: <@${topuser}>`,
 				}
 			});
 		}

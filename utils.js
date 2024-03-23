@@ -203,6 +203,22 @@ async function upvote(postID, userId) {
 
 }
 
+
+async function topuser() {
+	const usersRef = db.collection('posts');
+	const snapshot = await usersRef.get();
+	let users = [];
+	snapshot.forEach(doc => {
+		users.push(doc.data());
+	});
+	let topUsers = utils.getTopUsers(users);
+	let topUsersString = '';
+	for (let i = 0; i < topUsers.length; i++) {
+		topUsersString += `${i + 1}. <@${topUsers[i].userId}>: ${topUsers[i].upvotes}\n`;
+	}
+	return topUsersString;
+}
+
 module.exports = {
 	getSpotifyAccessToken,
 	getTrackDetailsFromSpotify,
@@ -215,5 +231,6 @@ module.exports = {
 	getRidOfVmTiktok,
 	loadData,
 	saveData,
-	upvote
+	upvote,
+	topuser
 };
