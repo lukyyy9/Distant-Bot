@@ -1,4 +1,5 @@
 const axios = require('axios'); // Ensure Axios is imported
+const db = require('./firebase.js'); // Ensure Firebase is imported
 
 async function getSpotifyAccessToken(clientId, clientSecret) {
   try {
