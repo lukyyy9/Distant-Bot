@@ -139,51 +139,68 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             });
         }
 
-        else if (requestData.name === 'topuser') {
-            const userLeaderboard = Object.entries(data.users)
-                .sort(([, a], [, b]) => b.totalUpvotesGiven - a.totalUpvotesGiven)
-                .slice(0, 10)
-                .map(([userId, { totalUpvotesGiven }], index) => `${index + 1}. <@${userId}> with ${totalUpvotesGiven} upvotes`)
-                .join('\n');
+		else if (requestData.name === 'topuser') {
+			db.collection('users').orderBy('totalUpvotesGiven', 'desc').limit(10).get()
+			.then(snapshot => {
+				const userLeaderboard = [];
+				let index = 0;
+				snapshot.forEach(doc => {
+					userLeaderboard.push(`${++index}. <@${doc.id}> with ${doc.data().totalUpvotesGiven} upvotes`);
+				});
+				res.send({
+					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+					data: { content: `Top users by upvotes:\n${userLeaderboard.join('\n')}` },
+				});
+			})
+			.catch(error => {
+				console.error("Error fetching top users: ", error);
+				res.status(500).send("Error fetching top users");
+			});
+		}
 
-            return res.send({
-                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                data: { content: `Top users by upvotes:\n${userLeaderboard}` },
-            });
-        }
 
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
-        const [action, postId] = requestData.custom_id.split('_');
+		const [action, postId] = requestData.custom_id.split('_');
+		if (action === 'upvote') {
+			const postRef = db.collection('posts').doc(postId);
 
-        if (action === 'upvote') {
-            const post = data.posts[postId] || { upvotes: 0, users: [] };
-            if (!post.users.includes(member.user.id)) {
-                post.upvotes += 1;
-                post.users.push(member.user.id);
-                data.posts[postId] = post;
+			db.runTransaction(async (transaction) => {
+				const postDoc = await transaction.get(postRef);
+				let post = postDoc.data();
 
-                data.users[member.user.id] = data.users[member.user.id] || { totalUpvotesGiven: 0 };
-                data.users[member.user.id].totalUpvotesGiven += 1;
+				if (!post) {
+					console.log("Post does not exist");
+					throw new Error("Post does not exist.");
+				}
 
-                saveData(data);
-                return res.send({
-                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: {
-                        content: `<@${member.user.id}> upvoted! Total upvotes: ${post.upvotes}`,
-                        flags: 64
-                    },
-                });
-                } else {
-                    return res.send({
-                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                        data: {
-                            content: `You've already upvoted this post, <@${member.user.id}>!`,
-                            flags: 64
-                        },
-                    });
-            }
-        }
-    }
+				if (post.users && post.users.includes(member.user.id)) {
+					res.send({
+						type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+						data: {
+							content: `You've already upvoted this post, <@${member.user.id}>!`,
+							flags: 64
+						},
+					});
+				} else {
+					const upvotes = (post.upvotes || 0) + 1;
+					const users = post.users ? [...post.users, member.user.id] : [member.user.id];
+
+					await transaction.set(postRef, { upvotes, users }, { merge: true });
+
+					res.send({
+						type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+						data: {
+							content: `<@${member.user.id}> upvoted! Total upvotes: ${upvotes}`,
+							flags: 64
+						},
+					});
+				}
+			}).catch((error) => {
+				console.error("Transaction failed: ", error);
+				res.status(500).send("An error occurred while processing your upvote.");
+			});
+		}
+	}
 });
 
 app.get('/register_commands', async (req, res) => {
