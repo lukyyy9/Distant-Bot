@@ -172,13 +172,30 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
 		const [action, postId] = requestData.custom_id.split('_');
 		if (action === 'upvote') {
-			res.send({
-				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-				data: {
-					content: `<@${member.user.id}> upvoted! Total upvotes: ${postId}`,
-					flags: 64
-				},
-			});
+			let upvotesDoc = db.collection('upvotes').doc('data');
+			let upvotesData = await loadData(upvotesDoc);
+			let totalupvote = upvotesData.totalUpvotes + 1;
+			let postIds = upvotesData.postIds || [];
+
+			if (!postIds.includes(postId)) {
+				postIds.push(postId);
+				saveData(upvotesDoc, { totalUpvotes: totalupvote, postIds: postIds });
+				res.send({
+					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+					data: {
+						content: `<@${member.user.id}> upvoted! Total upvotes: ${totalupvote}`,
+						flags: 64
+					},
+				});
+			} else {
+				res.send({
+					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+					data: {
+						content: `<@${member.user.id}>, you have already upvoted this post.`,
+						flags: 64
+					},
+				});
+			}
 		}
 	}
 });
