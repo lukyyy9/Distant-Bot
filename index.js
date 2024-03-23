@@ -163,49 +163,34 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
         const [action, postId] = requestData.custom_id.split('_');
 
-		if (action === 'upvote') {
+        if (action === 'upvote') {
 			const postRef = db.collection('posts').doc(postId);
-			let alreadyVoted = false;
 			db.runTransaction((transaction) => {
 				return transaction.get(postRef).then((doc) => {
 					if (!doc.exists) {
-						throw new Error("Document does not exist!");
+						throw Error("Document does not exist!");
 					}
 					let post = doc.data();
 					if (!post.users.includes(member.user.id)) {
-						post.upvotes = post.upvotes ? post.upvotes + 1 : 1;
-						post.users = post.users ? [...post.users, member.user.id] : [member.user.id];
-						transaction.set(postRef, post); // Using set with the post object to overwrite or create the document
-					} else {
-						alreadyVoted = true;
+						post.upvotes += 1;
+						post.users.push(member.user.id);
+						transaction.update(postRef, post);
 					}
 				});
 			}).then(() => {
-				if (alreadyVoted) {
-					return res.send({
-						type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-						data: {
-							content: `You've already upvoted this post, <@${member.user.id}>!`,
-							flags: 64
-						},
-					});
-				} else {
-					return res.send({
-						type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-						data: {
-							content: `<@${member.user.id}> upvoted! Total upvotes updated.`,
-							flags: 64
-						},
-					});
-				}
+				console.log("Transaction successfully committed!");
 			}).catch((error) => {
 				console.log("Transaction failed: ", error);
-				return res.status(500).send({
-					content: "An error occurred while processing your upvote.",
-				});
 			});
+			} else {
+				return res.send({
+					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+					data: {
+						content: `You've already upvoted this post, <@${member.user.id}>!`,
+						flags: 64
+					},
+				});
 		}
-
     }
 });
 
