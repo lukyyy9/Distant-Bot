@@ -170,13 +170,13 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 
 
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
+
 		const [action, postId] = requestData.custom_id.split('_');
-        const postIdStr = String(postId);
-        const userIdStr = String(member.user.id);
+        const userId = String(member.user.id); // Convertir en String pour assurer la compatibilité
 
         if (action === 'upvote') {
-            const postRef = db.collection('posts').doc(postIdStr);
-            const userVoteRef = postRef.collection('votes').doc(userIdStr);
+            const postRef = db.collection('posts').doc(postId);
+            const userVoteRef = postRef.collection('votes').doc(userId);
 
             try {
                 const doc = await userVoteRef.get();
@@ -186,21 +186,21 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                         let newVotesCount = postDoc.exists && postDoc.data().votesCount ? postDoc.data().votesCount + 1 : 1;
                         transaction.set(postRef, { votesCount: newVotesCount }, { merge: true });
                         transaction.set(userVoteRef, { upvoted: true });
-                        console.log(`Vote comptabilisé. Nouveau total de votes : ${newVotesCount}`);
                     });
-                    console.log(`L'utilisateur ${userIdStr} a voté pour le post ${postIdStr}.`);
+
+                    // Répondre à l'interaction Discord pour confirmer le vote
                     res.json({
                         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                         data: {
-                            content: `Vous avez voté pour ce post. Merci !`,
+                            content: `Votre vote a été comptabilisé pour le post ${postId}. Merci !`,
                         },
                     });
                 } else {
-                    console.log(`L'utilisateur ${userIdStr} a déjà voté pour ce post.`);
+                    // Informer l'utilisateur qu'il a déjà voté
                     res.json({
                         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                         data: {
-                            content: `Vous avez déjà voté pour ce post.`,
+                            content: `Vous avez déjà voté pour le post ${postId}.`,
                         },
                     });
                 }
