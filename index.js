@@ -175,7 +175,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 			const postRef = db.collection('posts').doc(postId);
 
 			try {
-				await db.runTransaction(async (transaction) => {
+				db.runTransaction(async (transaction) => {
 					const postDoc = await transaction.get(postRef);
 					let post = postDoc.exists ? postDoc.data() : { upvotes: 0, users: [] };
 
