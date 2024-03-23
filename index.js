@@ -175,7 +175,10 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 			const postRef = db.collection('posts').doc(postId);
 
 			try {
-				db.runTransaction(async (transaction) => {
+				await db.runTransaction(async (transaction) => {
+					// Load data before the transaction
+					const data = await loadData(db.collection('upvotes').doc('data'));
+
 					const postDoc = await transaction.get(postRef);
 					let post = postDoc.exists ? postDoc.data() : { upvotes: 0, users: [] };
 
@@ -193,6 +196,11 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 
 						transaction.set(postRef, post);
 
+						// Update data within the transaction
+						data.posts[postId] = (data.posts[postId] || 0) + 1;
+						data.users[member.user.id] = (data.users[member.user.id] || 0) + 1;
+						await saveData(data);
+
 						res.send({
 							type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 							data: {
@@ -207,6 +215,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 				res.status(500).send("An error occurred while processing your upvote.");
 			}
 		}
+
 	}
 });
 
