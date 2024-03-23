@@ -163,34 +163,51 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
         const [action, postId] = requestData.custom_id.split('_');
 
-        if (action === 'upvote') {
-			// Exemple de mise à jour d'un post avec Firebase
+		if (action === 'upvote') {
 			const postRef = db.collection('posts').doc(postId);
-			db.runTransaction((transaction) => {
-				return transaction.get(postRef).then((doc) => {
-					if (!doc.exists) {
-						throw new Error("Document does not exist!");
-					}
-					let post = doc.data();
-					if (!post.users.includes(member.user.id)) {
-						post.upvotes += 1;
-						post.users.push(member.user.id);
-						transaction.update(postRef, post);
-					}
-				});
+			let alreadyVoted = false;
+
+			db.runTransaction(async (transaction) => {
+				const doc = await transaction.get(postRef);
+				if (!doc.exists) {
+					console.log("Post does not exist");
+					throw new Error("Post does not exist.");
+				}
+				let post = doc.data();
+				if (!post.users) {
+					post.users = [];
+				}
+				if (post.users.includes(member.user.id)) {
+					alreadyVoted = true;
+					return; // Si l'utilisateur a déjà voté, on termine la transaction ici.
+				}
+				post.upvotes = (post.upvotes || 0) + 1;
+				post.users.push(member.user.id);
+				transaction.set(postRef, post); // Mise à jour du document avec les nouvelles valeurs.
 			}).then(() => {
-				console.log("Transaction successfully committed!");
+				if (alreadyVoted) {
+					res.send({
+						type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+						data: {
+							content: `You've already upvoted this post, <@${member.user.id}>!`,
+							flags: 64
+						},
+					});
+				} else {
+					res.send({
+						type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+						data: {
+							content: `<@${member.user.id}> upvoted! Total upvotes updated.`,
+							flags: 64
+						},
+					});
+				}
 			}).catch((error) => {
-				console.log("Transaction failed: ", error);
-			});
-			} else {
-				return res.send({
-					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-					data: {
-						content: `You've already upvoted this post, <@${member.user.id}>!`,
-						flags: 64
-					},
+				console.error("Transaction failed: ", error);
+				res.status(500).send({
+					content: "An error occurred while processing your upvote.",
 				});
+			});
 		}
     }
 });
