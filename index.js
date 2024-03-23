@@ -166,27 +166,23 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 		if (action === 'upvote') {
 			const postRef = db.collection('posts').doc(postId);
 			let alreadyVoted = false;
-
-			db.runTransaction(async (transaction) => {
-				const doc = await transaction.get(postRef);
-				if (!doc.exists) {
-					console.log("Post does not exist");
-					throw new Error("Post does not exist.");
-				}
-				let post = doc.data();
-				if (!post.users) {
-					post.users = [];
-				}
-				if (post.users.includes(member.user.id)) {
-					alreadyVoted = true;
-					return; // Si l'utilisateur a déjà voté, on termine la transaction ici.
-				}
-				post.upvotes = (post.upvotes || 0) + 1;
-				post.users.push(member.user.id);
-				transaction.set(postRef, post); // Mise à jour du document avec les nouvelles valeurs.
+			db.runTransaction((transaction) => {
+				return transaction.get(postRef).then((doc) => {
+					if (!doc.exists) {
+						throw new Error("Document does not exist!");
+					}
+					let post = doc.data();
+					if (!post.users.includes(member.user.id)) {
+						post.upvotes = post.upvotes ? post.upvotes + 1 : 1;
+						post.users = post.users ? [...post.users, member.user.id] : [member.user.id];
+						transaction.set(postRef, post); // Using set with the post object to overwrite or create the document
+					} else {
+						alreadyVoted = true;
+					}
+				});
 			}).then(() => {
 				if (alreadyVoted) {
-					res.send({
+					return res.send({
 						type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 						data: {
 							content: `You've already upvoted this post, <@${member.user.id}>!`,
@@ -194,7 +190,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 						},
 					});
 				} else {
-					res.send({
+					return res.send({
 						type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 						data: {
 							content: `<@${member.user.id}> upvoted! Total upvotes updated.`,
@@ -203,12 +199,13 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 					});
 				}
 			}).catch((error) => {
-				console.error("Transaction failed: ", error);
-				res.status(500).send({
+				console.log("Transaction failed: ", error);
+				return res.status(500).send({
 					content: "An error occurred while processing your upvote.",
 				});
 			});
 		}
+
     }
 });
 
