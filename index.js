@@ -160,7 +160,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
         const userId = String(member.user.id);
 
         if (action === 'upvote') {
-			utils.upvotePost(post, userId);
+			utils.upvote(post, userId);
 			return res.send({
 					type: InteractionResponseType.UPDATE_MESSAGE,
 					data: {
