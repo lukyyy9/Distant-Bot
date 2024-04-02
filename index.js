@@ -161,6 +161,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 					data: {
 						content: `Post upvoted by <@${member.user.id}>`,
+                        flags: 64
 					}
 				});
         }
