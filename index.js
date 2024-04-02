@@ -141,24 +141,14 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
         }
 
 		else if (requestData.name === 'topuser') {
-			try {
-				const topUsersString = utils.topuser(db);
+				const topUsersString = await utils.topuser(db);
 				return res.send({
-					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+					type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
 					data: {
 					content: `Top users:\n${topUsersString}`,
 					}
 				});
-				} catch (error) {
-				console.error('Erreur lors de la récupération des top utilisateurs :', error);
-				return res.status(500).send({
-					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-					data: {
-					content: `Erreur lors de la récupération des top utilisateurs.`,
-					}
-				});
 			}
-		}
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
 
 		const [action, postId] = requestData.custom_id.split('_');
