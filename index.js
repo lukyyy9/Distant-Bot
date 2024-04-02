@@ -150,38 +150,21 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 				});
 			}
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
-		const [action, postId] = requestData.custom_id.split('_');
-		const post = String(postId);
-		const userId = String(member.user.id);
 
-		if (action === 'upvote') {
-			upvote(post, userId).then(newVotesCount => {
-				if (newVotesCount !== null) {
-					return res.send({
-						type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
-						data: {
-							content: `Post upvoted by <@${member.user.id}>. Total votes: ${newVotesCount}`,
-						}
-					});
-				} else {
-					return res.send({
-						type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
-						data: {
-							content: `You've already upvoted this post.`,
-						}
-					});
-				}
-			}).catch(error => {
-				console.error("Erreur lors de l'upvote: ", error);
-				return res.status(500).send({
-					type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
+		const [action, postId] = requestData.custom_id.split('_');
+		const post = String(postId)
+        const userId = String(member.user.id);
+
+        if (action === 'upvote') {
+			utils.upvote(post, userId);
+			return res.send({
+					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 					data: {
-						content: `An error occurred while upvoting.`,
+						content: `Post upvoted by <@${member.user.id}>`,
 					}
 				});
-			});
-		}
-	}
+        }
+    }
 });
 
 
