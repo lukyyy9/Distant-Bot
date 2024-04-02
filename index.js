@@ -160,7 +160,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
         if (action === 'upvote') {
 			utils.upvote(post, userId);
 			return res.send({
-					type: InteractionResponseType.UPDATE_MESSAGE,
+					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 					data: {
 						content: `Post upvoted by <@${member.user.id}>`,
 					}
