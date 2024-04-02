@@ -203,21 +203,23 @@ async function upvote(postID, userId) {
 
 }
 
-
-async function topuser() {
-	const usersRef = db.collection('posts');
+async function topuser(db) {
+	const usersRef = db.collection('users');
 	const snapshot = await usersRef.get();
 	let users = [];
 	snapshot.forEach(doc => {
-		users.push(doc.data());
+		let userData = doc.data();
+		userData.userId = doc.id;
+		users.push(userData);
 	});
-	let topUsers = utils.getTopUsers(users);
+	let topUsers = users.sort((a, b) => b.votes - a.votes).slice(0, 5);
 	let topUsersString = '';
 	for (let i = 0; i < topUsers.length; i++) {
-		topUsersString += `${i + 1}. <@${topUsers[i].userId}>: ${topUsers[i].upvotes}\n`;
+		topUsersString += `${i + 1}. <@${topUsers[i].userId}>: ${topUsers[i].votes}\n`;
 	}
 	return topUsersString;
 }
+
 
 module.exports = {
 	getSpotifyAccessToken,
