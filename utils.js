@@ -203,9 +203,9 @@ async function upvote(postID, userId) {
 
 }
 
-async function topuser(db) {
+function topuser(db) {
 	const usersRef = db.collection('users');
-	const snapshot = await usersRef.get();
+	const snapshot = usersRef.get();
 	let users = [];
 	snapshot.forEach(doc => {
 		let userData = doc.data();
