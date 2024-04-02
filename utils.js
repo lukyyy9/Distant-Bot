@@ -174,51 +174,46 @@ async function saveData(data) {
 }
 
 async function upvote(postID, userId) {
-	const postRef = db.collection('posts').doc(postID);
-	const userVoteRef = postRef.collection('votes').doc(userId);
+    const postRef = db.collection('posts').doc(postID);
+    const userVoteRef = postRef.collection('votes').doc(userId);
 
-	console.log(`Début du processus de upvote pour le post ${postID} par l'utilisateur ${userId}`);
-
-	userVoteRef.get().then(doc => {
-		if (!doc.exists) {
-			console.log(`L'utilisateur ${userId} n'a pas encore voté pour le post ${postID}. Traitement du vote.`);
-			return db.runTransaction(transaction => {
-				return transaction.get(postRef).then(postDoc => {
-					let newVotesCount = postDoc.exists && postDoc.data().votesCount ? postDoc.data().votesCount + 1 : 1;
-					transaction.set(postRef, { votesCount: newVotesCount }, { merge: true });
-					transaction.set(userVoteRef, { upvoted: true });
-					return newVotesCount;
-				});
-			}).then(newVotesCount => {
-				console.log(`Vote traité avec succès. Total des votes pour le post ${postID}: ${newVotesCount}`);
-			}).catch(error => {
-				console.error("La transaction a échoué: ", error);
-			});
-		} else {
-			console.log(`L'utilisateur ${userId} a déjà voté pour le post ${postID}.`);
-		}
-	}).catch(error => {
-		console.error("Erreur lors de la vérification du statut de vote: ", error);
-	});
-
+    try {
+        const doc = await userVoteRef.get();
+        if (!doc.exists) {
+            const newVotesCount = await db.runTransaction(async (transaction) => {
+                const postDoc = await transaction.get(postRef);
+                let votesCount = postDoc.exists && postDoc.data().votesCount ? postDoc.data().votesCount + 1 : 1;
+                transaction.set(postRef, { votesCount: votesCount }, { merge: true });
+                transaction.set(userVoteRef, { upvoted: true });
+                return votesCount;
+            });
+            console.log(`Vote traité avec succès. Total des votes pour le post ${postID}: ${newVotesCount}`);
+            return newVotesCount;
+        } else {
+            console.log(`L'utilisateur ${userId} a déjà voté pour le post ${postID}.`);
+            return null;
+        }
+    } catch (error) {
+        console.error("Erreur lors de la transaction de vote: ", error);
+        throw error;
+    }
 }
 
 async function topuser(db) {
-	const usersRef = db.collection('users');
-	const snapshot = await usersRef.get();
-	let users = [];
-	snapshot.forEach(doc => {
-		let userData = doc.data();
-		userData.userId = doc.id;
-		users.push(userData);
-	});
-	let topUsers = users.sort((a, b) => b.votes - a.votes).slice(0, 5);
-	let topUsersString = '';
-	for (let i = 0; i < topUsers.length; i++) {
-		topUsersString += `${i + 1}. <@${topUsers[i].userId}>: ${topUsers[i].votes}\n`;
-	}
-	return topUsersString;
+    const usersRef = db.collection('users');
+    try {
+        const snapshot = await usersRef.orderBy('votes', 'desc').limit(5).get();
+        let topUsers = snapshot.docs.map((doc, index) => {
+            const userData = doc.data();
+            return `${index + 1}. <@${doc.id}>: ${userData.votes}`;
+        }).join('\n');
+        return topUsers || 'Aucun utilisateur trouvé.';
+    } catch (error) {
+        console.error('Erreur lors de la récupération des utilisateurs:', error);
+        return 'Erreur lors de la récupération des meilleurs utilisateurs.';
+    }
 }
+
 
 
 module.exports = {
