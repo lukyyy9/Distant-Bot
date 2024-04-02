@@ -140,7 +140,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             });
         }
 
-		else if (req.body.name === 'topuser') {
+		else if (requestData.name === 'topuser') {
 			try {
 				const topUsersString = utils.topuser(db);
 				return res.send({
