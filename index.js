@@ -142,7 +142,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 
 		else if (req.body.name === 'topuser') {
 			try {
-				const topUsersString = await utils.topuser(db);
+				const topUsersString = utils.topuser(db);
 				return res.send({
 					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 					data: {
