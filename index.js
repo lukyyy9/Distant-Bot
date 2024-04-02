@@ -144,7 +144,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 			return res.send({
 				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 				data: {
-					content: `Top user: <@${await utils.topuser()}>`,
+					content: `Top user: <@${utils.topuser()}>`,
 				}
 			});
 		}
