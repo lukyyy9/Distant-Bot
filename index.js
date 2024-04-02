@@ -143,7 +143,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 		else if (requestData.name === 'topuser') {
 				const topUsersString = await utils.topuser(db);
 				return res.send({
-					type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
+					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 					data: {
 					content: `Top users:\n${topUsersString}`,
 					}
