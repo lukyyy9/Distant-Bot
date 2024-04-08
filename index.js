@@ -212,6 +212,11 @@ app.get('/register_commands', async (req, res) => {
             description: "Displays the leaderboard of users with the most upvotes given",
             options: []
 		},
+        {
+            name: "chaise",
+            description: "Chaise",
+            options: []
+        }
     ];
     //Get global commands
     try {
