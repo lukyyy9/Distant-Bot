@@ -149,6 +149,16 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 					}
 				});
 			}
+
+        else if (requestData.name === 'chaise'){
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: `https://media.discordapp.net/attachments/1019235624013811722/1105832848314880020/ezgif.com-video-to-gif_3.gif?ex=661fbf98&is=660d4a98&hm=a9125c87aa929746596a4049cd8610864b8987b490c8d18d538798d5f556a9d0&`,
+                },
+            });
+        }
+
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
 
 		const [action, postId] = requestData.custom_id.split('_');
