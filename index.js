@@ -214,7 +214,7 @@ app.get('/register_commands', async (req, res) => {
 		},
         {
             name: "chaise",
-            description: "Chaise",
+            description: "❓",
             options: []
         }
     ];
