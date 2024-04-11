@@ -84,9 +84,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             let components = [];
             if (service === 'spotify') {
                 url = url.replace(/\/intl-\w\w/, ''); // Remove /intl-xx from the url
-                console.log(`URL after replacement: ${url}`);
                 trackDetails = await utils.getTrackDetailsFromSpotify(url, spotifyAccessToken);
-                console.log(`Track details: ${JSON.stringify(trackDetails)}`);
                 spotifyLink = url;
             } else if (service === 'youtube') {
                 trackDetails = await utils.getTrackDetailsFromYouTube(url, youtubeApiKey);
