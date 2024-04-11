@@ -250,7 +250,7 @@ app.get('/', (req, res) => {
 
 app.get('/spotifyToken', async (req, res) => {
     spotifyAccessToken = await utils.getSpotifyAccessToken(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
-    res.send(spotifyAccessToken);
+    res.send("Spotify token refreshed");
 });
 
 const PORT = process.env.PORT || 8999;
