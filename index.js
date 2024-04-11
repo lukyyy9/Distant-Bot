@@ -11,6 +11,7 @@ const app = express();
 app.use(express.json());
 
 let youtubeApiKey = process.env.YOUTUBE_API_KEY;
+let spotifyAccessToken = null;
 
 async function spotifyTokenInit() {
     try {
