@@ -10,6 +10,7 @@ const app = express();
 app.use(express.json());
 
 let youtubeApiKey = process.env.YOUTUBE_API_KEY;
+let spotifyAccessToken = utils.getSpotifyAccessToken(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
 
 const discordApi = axios.create({
     baseURL: 'https://discord.com/api/',
@@ -92,7 +93,6 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             let url = requestData.options[0].value;
             const service = utils.getService(url);
             let trackDetails;
-            let spotifyAccessToken = await utils.getSpotifyAccessToken(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
             let spotifyLink = '';
             let youtubeLink = '';
             let deezerLink = '';
@@ -268,6 +268,11 @@ app.get('/register_commands', async (req, res) => {
 
 app.get('/', (req, res) => {
     res.redirect(`https://discord.com/oauth2/authorize?client_id=1212077510431608973&permissions=2048&scope=bot+applications.commands`);
+});
+
+app.get('/spotifyToken', async (req, res) => {
+    spotifyAccessToken = await utils.getSpotifyAccessToken(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
+    res.send(spotifyAccessToken);
 });
 
 const PORT = process.env.PORT || 8999;
