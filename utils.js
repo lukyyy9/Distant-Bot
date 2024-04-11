@@ -13,7 +13,6 @@ async function getSpotifyAccessToken(clientId, clientSecret) {
         },
       }
     );
-    console.log('Spotify token refreshed');
     return response.data.access_token;
   } catch (error) {
     console.error('Error fetching Spotify access token:', error);
