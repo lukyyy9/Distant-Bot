@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const utils = require('./utils.js');
+const db = require('./firebase.js');
 const fs = require('fs');
 const path = require('path');
 const { InteractionType, InteractionResponseType, verifyKeyMiddleware } = require('discord-interactions');
@@ -22,26 +23,6 @@ const discordApi = axios.create({
 const verifyMiddleware = verifyKeyMiddleware(process.env.PUBLIC_KEY);
 
 const dataFilePath = path.join(__dirname, 'upvote.json');
-
-const loadData = () => {
-    try {
-        const data = fs.readFileSync(dataFilePath, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        console.error('Error reading upvotes data file:', error);
-        return { posts: {}, users: {} };
-    }
-};
-
-const saveData = (data) => {
-    try {
-        fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2), 'utf8');
-    } catch (error) {
-        console.error('Error writing to upvotes data file:', error);
-    }
-};
-
-let data = loadData();
 
 app.post('/interactions', verifyMiddleware, async (req, res) => {
     const { type, data: requestData, member } = req.body;
@@ -158,53 +139,46 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
                 }
             });
         }
-        
-        else if (requestData.name === 'topuser') {
-            const userLeaderboard = Object.entries(data.users)
-                .sort(([, a], [, b]) => b.totalUpvotesGiven - a.totalUpvotesGiven)
-                .slice(0, 10)
-                .map(([userId, { totalUpvotesGiven }], index) => `${index + 1}. <@${userId}> with ${totalUpvotesGiven} upvotes`)
-                .join('\n');
 
+		else if (requestData.name === 'topuser') {
+				const topUsersString = await utils.topuser(db);
+				return res.send({
+					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+					data: {
+					content: `Top users:\n${topUsersString}`,
+					}
+				});
+			}
+
+        else if (requestData.name === 'chaise'){
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                data: { content: `Top users by upvotes:\n${userLeaderboard}` },
+                data: {
+                    content: `https://media.discordapp.net/attachments/1019235624013811722/1105832848314880020/ezgif.com-video-to-gif_3.gif?ex=661fbf98&is=660d4a98&hm=a9125c87aa929746596a4049cd8610864b8987b490c8d18d538798d5f556a9d0&`,
+                },
             });
-        } 
+        }
 
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
-        const [action, postId] = requestData.custom_id.split('_');
+
+		const [action, postId] = requestData.custom_id.split('_');
+		const post = String(postId)
+        const userId = String(member.user.id);
 
         if (action === 'upvote') {
-            const post = data.posts[postId] || { upvotes: 0, users: [] };
-            if (!post.users.includes(member.user.id)) {
-                post.upvotes += 1;
-                post.users.push(member.user.id);
-                data.posts[postId] = post;
-
-                data.users[member.user.id] = data.users[member.user.id] || { totalUpvotesGiven: 0 };
-                data.users[member.user.id].totalUpvotesGiven += 1;
-
-                saveData(data);
-                return res.send({
-                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: { 
-                        content: `<@${member.user.id}> upvoted! Total upvotes: ${post.upvotes}`,
+			utils.upvote(post, userId);
+			return res.send({
+					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+					data: {
+						content: `Post upvoted by <@${member.user.id}>`,
                         flags: 64
-                    },
-                });
-                } else {
-                    return res.send({
-                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                        data: { 
-                            content: `You've already upvoted this post, <@${member.user.id}>!`,
-                            flags: 64
-                        },
-                    });
-            }
+					}
+				});
         }
     }
 });
+
+
 
 app.get('/register_commands', async (req, res) => {
     const slashCommands = [
@@ -236,13 +210,17 @@ app.get('/register_commands', async (req, res) => {
         {
             name: "topuser",
             description: "Displays the leaderboard of users with the most upvotes given",
-            options: [],
-        },
+            options: []
+		},
+        {
+            name: "chaise",
+            description: "❓",
+            options: []
+        }
     ];
     //Get global commands
     try {
-        const response = await discordApi.get(`/applications/${process.env.APPLICATION_ID}/commands`);
-        const commands = response.data;
+        await discordApi.get(`/applications/${process.env.APPLICATION_ID}/commands`);
     } catch (error) {
         console.error('Error getting global commands:', error);
     }
