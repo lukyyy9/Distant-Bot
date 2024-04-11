@@ -13,6 +13,15 @@ app.use(express.json());
 let youtubeApiKey = process.env.YOUTUBE_API_KEY;
 let spotifyAccessToken;
 
+async function spotifyTokenInit() {
+    try {
+        spotifyAccessToken = await utils.getSpotifyAccessToken(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
+        console.log("Spotify token successfully fetched");
+    } catch (error) {
+        console.error("Failed to fetch Spotify token", error);
+    }
+}
+
 const discordApi = axios.create({
     baseURL: 'https://discord.com/api/',
     headers: {
@@ -25,8 +34,6 @@ const verifyMiddleware = verifyKeyMiddleware(process.env.PUBLIC_KEY);
 const dataFilePath = path.join(__dirname, 'upvote.json');
 
 app.post('/interactions', verifyMiddleware, async (req, res) => {
-    spotifyAccessToken = await utils.getSpotifyAccessToken(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
-    console.log('Spotify token refreshed');
     const { type, data: requestData, member } = req.body;
 
     if (type === InteractionType.APPLICATION_COMMAND) {
@@ -271,4 +278,5 @@ app.get('/spotifyToken', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 8999;
+spotifyTokenInit();
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
