@@ -83,6 +83,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             let musicWord = 'Music';
             let components = [];
             if (service === 'spotify') {
+                url = url.replace(/\/intl-\w\w/, ''); // Remove /intl-xx from the url
                 trackDetails = await utils.getTrackDetailsFromSpotify(url, spotifyAccessToken);
                 spotifyLink = url;
             } else if (service === 'youtube') {
