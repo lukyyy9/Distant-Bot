@@ -11,7 +11,10 @@ const app = express();
 app.use(express.json());
 
 let youtubeApiKey = process.env.YOUTUBE_API_KEY;
-let spotifyAccessToken = await utils.getSpotifyAccessToken(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
+let spotifyAccessToken;
+(async () => {
+    spotifyAccessToken = await utils.getSpotifyAccessToken(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET);
+})();
 
 const discordApi = axios.create({
     baseURL: 'https://discord.com/api/',
