@@ -11,7 +11,6 @@ const app = express();
 app.use(express.json());
 
 let youtubeApiKey = process.env.YOUTUBE_API_KEY;
-let spotifyAccessToken;
 
 async function spotifyTokenInit() {
     try {
@@ -35,7 +34,7 @@ const dataFilePath = path.join(__dirname, 'upvote.json');
 
 app.post('/interactions', verifyMiddleware, async (req, res) => {
     const { type, data: requestData, member } = req.body;
-
+    if (!spotifyAccessToken) await spotifyTokenInit();
     if (type === InteractionType.APPLICATION_COMMAND) {
 
         if (requestData.name === 'ping') {
