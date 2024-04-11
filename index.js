@@ -162,6 +162,15 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             });
         }
 
+        else if (requestData.name === 'esiahc'){
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: `https://media.discordapp.net/attachments/992074829169692847/1116867287346061392/ezgif.com-reverse.gif?ex=6622fa37&is=66108537&hm=bab4051f069b0a09e1d47d038e0dd82dbfcf3a169586e67b3e0f1d023dbdb5e6&=&width=380&height=676`,
+                },
+            });
+        }
+
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
 
 		const [action, postId] = requestData.custom_id.split('_');
@@ -218,6 +227,11 @@ app.get('/register_commands', async (req, res) => {
         {
             name: "chaise",
             description: "❓",
+            options: []
+        },
+        {
+            name: "esiahc",
+            description: "❓⏪",
             options: []
         }
     ];
