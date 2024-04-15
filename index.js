@@ -249,7 +249,12 @@ app.get('/register_commands', async (req, res) => {
             name: "esiahc",
             description: "❓⏪",
             options: []
-        }
+        },
+		{
+			name: "JoyeuxAnniversaireLucas",
+			description: "Wish a happy birthday to Lucas",
+			options: []
+		}
     ];
     //Get global commands
     try {
