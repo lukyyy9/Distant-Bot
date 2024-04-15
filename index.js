@@ -178,15 +178,6 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
             });
         }
 
-		else if (requestData.name === 'JoyeuxAnniversaireLucas'){
-			return res.send({
-				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-				data: {
-					content: `Joyeux anniversaire Lucas !`,
-				}
-			});
-		}
-
     } else if (type === InteractionType.MESSAGE_COMPONENT) {
 
 		const [action, postId] = requestData.custom_id.split('_');
@@ -249,12 +240,7 @@ app.get('/register_commands', async (req, res) => {
             name: "esiahc",
             description: "❓⏪",
             options: []
-        },
-		{
-			name: "JoyeuxAnniversaireLucas",
-			description: "Wish a happy birthday to Lucas",
-			options: []
-		}
+        }
     ];
     //Get global commands
     try {
