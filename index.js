@@ -182,7 +182,7 @@ app.post('/interactions', verifyMiddleware, async (req, res) => {
 			return res.send({
 				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 				data: {
-					content: `Joyeux anniversaire Lucas ! 🎉🎂🎁`,
+					content: `Joyeux anniversaire Lucas !`,
 				}
 			});
 		}
