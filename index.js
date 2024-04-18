@@ -35,7 +35,7 @@ const dataFilePath = path.join(__dirname, 'upvote.json');
 
 app.post('/interactions', verifyMiddleware, async (req, res) => {
     const { type, data: requestData, member } = req.body;
-    if (!spotifyAccessToken) await spotifyTokenInit();
+    if (spotifyAccessToken===null) await spotifyTokenInit();
     if (type === InteractionType.APPLICATION_COMMAND) {
 
         if (requestData.name === 'ping') {
