@@ -1,6 +1,6 @@
 # Distant Bot for Discord
 
-![Distant Bot Logo](https://media.discordapp.net/attachments/696115202185232497/1219987402345676880/distant3.png?ex=660d4cce&is=65fad7ce&hm=b1c4c0f5d5425655c8b13f39d9a4eb20ed9d81bbdc0f6c39a6f11db815471940&=&format=webp&quality=lossless)
+![Distant Bot Logo](https://i.imgur.com/A1VwRk6.png)
 
 ## Overview
 
