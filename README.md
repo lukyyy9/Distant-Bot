@@ -14,30 +14,26 @@ Users can also **share tracks from a music streaming service**. Distant will sea
 
 ## Features
 
-### `/ping`
-
-- Checks if the bot is responsive and operational.
-
-![Ping Command Illustration](https://media.discordapp.net/attachments/696115202185232497/1219988154359222283/image.png?ex=660d4d82&is=65fad882&hm=a371b42a248240a1da007161fe29e456a5720c3123bee3a6c494b567a00dae93&=&format=webp&quality=lossless)
-
 ### `/video [url]`
 
 - Share media from Instagram, TikTok, or Twitter directly into your Discord server.
 - Users can like shared videos, adding a layer of interaction and engagement.
 
-![Video Command Illustration](https://media.discordapp.net/attachments/696115202185232497/1219988022737502248/image.png?ex=660d4d62&is=65fad862&hm=79384e0d6cc9f0092f3efd4af5485a6599b9101c758672a81dcead2905776022&=&format=webp&quality=lossless)
+![Video Command Illustration](https://i.imgur.com/CxqBSe5.png)
 
 ### `/music [url]`
 
 - Share a music track from and to all streaming services, making it easy for everyone to enjoy the same tune.
 
-![Music Command Illustration](https://media.discordapp.net/attachments/696115202185232497/1219987885797802004/image.png?ex=660d4d42&is=65fad842&hm=c1c229c5ea85910635d650308dc61b9fc7bf2cae2090f4b844680d87df1272eb&=&format=webp&quality=lossless)
+![Music Command Illustration](https://i.imgur.com/J1Hxx9s.png)
 
 ### `/topuser`
 
 - Displays the user who has received the most likes for the videos they've shared, highlighting the most influential content sharers within the community.
 
-![Topuser Command Illustration](https://media.discordapp.net/attachments/696115202185232497/1219988035119218749/image.png?ex=660d4d65&is=65fad865&hm=dd368a0189dd16c10057a3c533a49f5ac228401a4c8b96e356cb3c88f984d5a0&=&format=webp&quality=lossless)
+### `/ping`
+
+- Checks if the bot is responsive and operational.
 
 ## Open Source
 
